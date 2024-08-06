@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: unlicensed
-pragma solidity 0.7.6;
+pragma solidity 0.8.14;
 
 interface IBridgeToken {
     function ownerMint(address to, uint amount) external returns(bool);
