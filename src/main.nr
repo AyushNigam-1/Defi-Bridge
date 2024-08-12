@@ -1,141 +1,156 @@
-mod types;
+// docs:start:token_bridge_imports
 
-contract AztecBridge {
-    use dep::aztec::{
-        context::{PrivateContext, PublicContext, Context},
-        note::{note_getter_options::NoteGetterOptions, note_header::NoteHeader, utils as note_utils},
-        hash::compute_secret_hash,
-        state_vars::{map::Map, public_state::PublicState, set::Set},
-        types::type_serialization::{field_serialization::FieldSerializationMethods, FIELD_SERIALIZED_LEN, bool_serialization::BoolSerializationMethods, BOOL_SERIALIZED_LEN, aztec_address_serialization::AztecAddressSerializationMethods, AZTEC_ADDRESS_SERIALIZED_LEN},
-        types::address::AztecAddress,
-        selector::compute_selector,
-    };
+// Minimal implementation of the token bridge that can move funds between L1 <> L2.
+// The bridge has a corresponding Portal contract on L1 that it is attached to
+// And corresponds to a Token on L2 that uses the `AuthWit` accounts pattern.
+// Bridge has to be set as a minter on the token before it can be used
 
-    use crate::types::{transparent_note::{TransparentNote, TransparentNoteMethods, TRANSPARENT_NOTE_LEN}, token_note::{TokenNote, TokenNoteMethods, TOKEN_NOTE_LEN}, balances_map::BalancesMap, safe_u120_serialization::{SafeU120SerializationMethods, SAFE_U120_SERIALIZED_LEN}};
-    use dep::authwit::{auth::{assert_current_call_valid_authwit, assert_current_call_valid_authwit_public}};
-    use dep::safe_math::SafeU120;
+contract TokenBridge {
+    use dep::aztec::prelude::{FunctionSelector, AztecAddress, EthAddress, PublicMutable, SharedImmutable};
 
+    use dep::token_portal_content_hash_lib::{get_mint_public_content_hash, get_mint_private_content_hash, get_withdraw_content_hash};
+
+    use dep::token::Token;
+    // docs:end:token_bridge_imports
+
+    // docs:start:token_bridge_storage_and_constructor
+    // Storage structure, containing all storage, and specifying what slots they use.
+    #[aztec(storage)]
     struct Storage {
-        admin: PublicState<AztecAddress, AZTEC_ADDRESS_SERIALIZED_LEN>,
-        minters: Map<PublicState<bool, BOOL_SERIALIZED_LEN>>,
-        balances: BalancesMap,
-        total_supply: PublicState<SafeU120, SAFE_U120_SERIALIZED_LEN>,
-        pending_shields: Set<TransparentNote, TRANSPARENT_NOTE_LEN>,
-        public_balances: Map<PublicState<SafeU120, SAFE_U120_SERIALIZED_LEN>>,
-        processed_hashes: Set<TransparentNote, TRANSPARENT_NOTE_LEN>, // To track processed transactions
+        token: PublicMutable<AztecAddress>,
+        portal_address: SharedImmutable<EthAddress>,
     }
 
-    impl Storage {
-        fn init(context: Context) -> pub Self {
-            Storage {
-                admin: PublicState::new(context, 1, AztecAddressSerializationMethods),
-                minters: Map::new(context, 2, |context, slot| PublicState::new(context, slot, BoolSerializationMethods)),
-                balances: BalancesMap::new(context, 3),
-                total_supply: PublicState::new(context, 4, SafeU120SerializationMethods),
-                pending_shields: Set::new(context, 5, TransparentNoteMethods),
-                public_balances: Map::new(context, 6, |context, slot| PublicState::new(context, slot, SafeU120SerializationMethods)),
-                processed_hashes: Set::new(context, 7, TransparentNoteMethods), // To track processed transactions
-            }
-        }
+    // Constructs the contract.
+    #[aztec(public)]
+    #[aztec(initializer)]
+    fn constructor(token: AztecAddress, portal_address: EthAddress) {
+        storage.token.write(token);
+        storage.portal_address.initialize(portal_address);
     }
+    // docs:end:token_bridge_storage_and_constructor
 
     #[aztec(private)]
-    fn constructor(admin: AztecAddress) {
-        let selector = compute_selector("_initialize((Field))");
-        context.call_public_function(context.this_address(), selector, [admin.address]);
+    fn get_portal_address() -> EthAddress {
+        storage.portal_address.read_private()
     }
 
     #[aztec(public)]
-    fn set_admin(new_admin: AztecAddress) {
-        assert(storage.admin.read().eq(AztecAddress::new(context.msg_sender())), "caller is not admin");
-        storage.admin.write(new_admin);
+    fn get_portal_address_public() -> EthAddress {
+        storage.portal_address.read_public()
     }
 
+    // docs:start:claim_public
+    // Consumes a L1->L2 message and calls the token contract to mint the appropriate amount publicly
     #[aztec(public)]
-    fn set_minter(minter: AztecAddress, approve: bool) {
-        assert(storage.admin.read().eq(AztecAddress::new(context.msg_sender())), "caller is not admin");
-        storage.minters.at(minter.address).write(approve);
-    }
+    fn claim_public(to: AztecAddress, amount: Field, secret: Field, message_leaf_index: Field) {
+        let content_hash = get_mint_public_content_hash(to, amount);
 
+        // Consume message and emit nullifier
+        context.consume_l1_to_l2_message(
+            content_hash,
+            secret,
+            storage.portal_address.read_public(),
+            message_leaf_index
+        );
+
+        // Mint tokens
+        Token::at(storage.token.read()).mint_public(to, amount).call(&mut context);
+    }
+    // docs:end:claim_public
+
+    // docs:start:exit_to_l1_public
+    // Burns the appropriate amount of tokens and creates a L2 to L1 withdraw message publicly
+    // Requires `msg.sender` to give approval to the bridge to burn tokens on their behalf using witness signatures
     #[aztec(public)]
-    fn mint_public(to: AztecAddress, amount: Field) {
-        assert(storage.minters.at(context.msg_sender()).read(), "caller is not minter");
-        let amount = SafeU120::new(amount);
-        let new_balance = storage.public_balances.at(to.address).read().add(amount);
-        let supply = storage.total_supply.read().add(amount);
-        storage.public_balances.at(to.address).write(new_balance);
-        storage.total_supply.write(supply);
-        emit Mint(to, amount);
-    }
+    fn exit_to_l1_public(
+        recipient: EthAddress, // ethereum address to withdraw to
+        amount: Field,
+        caller_on_l1: EthAddress, // ethereum address that can call this function on the L1 portal (0x0 if anyone can call)
+        nonce: Field // nonce used in the approval message by `msg.sender` to let bridge burn their tokens on L2
+    ) {
+        // Send an L2 to L1 message
+        let content = get_withdraw_content_hash(recipient, amount, caller_on_l1);
+        context.message_portal(storage.portal_address.read_public(), content);
 
-    #[aztec(public)]
-    fn mint_private(amount: Field, secret_hash: Field) {
-        assert(storage.minters.at(context.msg_sender()).read(), "caller is not minter");
-        let pending_shields = storage.pending_shields;
-        let mut note = TransparentNote::new(amount, secret_hash);
-        let supply = storage.total_supply.read().add(SafeU120::new(amount));
-        storage.total_supply.write(supply);
-        pending_shields.insert_from_public(&mut note);
-        emit Mint(context.msg_sender(), amount);
+        // Burn tokens
+        Token::at(storage.token.read()).burn_public(context.msg_sender(), amount, nonce).call(&mut context);
     }
-
-    #[aztec(public)]
-    fn shield(from: AztecAddress, amount: Field, secret_hash: Field, nonce: Field) {
-        if (from.address != context.msg_sender()) {
-            assert_current_call_valid_authwit_public(&mut context, from);
-        } else {
-            assert(nonce == 0, "invalid nonce");
-        }
-        let amount = SafeU120::new(amount);
-        let from_balance = storage.public_balances.at(from.address).read().sub(amount);
-        let pending_shields = storage.pending_shields;
-        let mut note = TransparentNote::new(amount.value as Field, secret_hash);
-        storage.public_balances.at(from.address).write(from_balance);
-        pending_shields.insert_from_public(&mut note);
-        emit Lock(from, amount, compute_secret_hash(secret_hash));
-    }
-
-    #[aztec(public)]
-    fn transfer_public(from: AztecAddress, to: AztecAddress, amount: Field) {
-        assert(storage.public_balances.at(from.address).read().gte(amount), "insufficient balance");
-        let amount = SafeU120::new(amount);
-        let from_balance = storage.public_balances.at(from.address).read().sub(amount);
-        let to_balance = storage.public_balances.at(to.address).read().add(amount);
-        storage.public_balances.at(from.address).write(from_balance);
-        storage.public_balances.at(to.address).write(to_balance);
-        emit Transfer(from, to, amount);
-    }
-
+    // docs:end:exit_to_l1_public
+    // docs:start:claim_private
+    // Consumes a L1->L2 message and calls the token contract to mint the appropriate amount in private assets
+    // User needs to call token.redeem_shield() to get the private assets
     #[aztec(private)]
-    fn transfer_private(from: TokenNote, to: AztecAddress, amount: Field) {
-        let from_balance = storage.balances.at(from.owner).read().sub(SafeU120::new(from.amount));
-        let to_balance = storage.balances.at(to.address).read().add(SafeU120::new(amount));
-        storage.balances.at(from.owner).write(from_balance);
-        storage.balances.at(to.address).write(to_balance);
-        emit Transfer(from.owner, to, amount);
-    }
+    fn claim_private(
+        secret_hash_for_redeeming_minted_notes: Field, // secret hash used to redeem minted notes at a later time. This enables anyone to call this function and mint tokens to a user on their behalf
+        amount: Field,
+        secret_for_L1_to_L2_message_consumption: Field // secret used to consume the L1 to L2 message
+    ) {
+        // Consume L1 to L2 message and emit nullifier
+        let content_hash = get_mint_private_content_hash(secret_hash_for_redeeming_minted_notes, amount);
+        context.consume_l1_to_l2_message(
+            content_hash,
+            secret_for_L1_to_L2_message_consumption,
+            storage.portal_address.read_private()
+        );
 
+        // Mint tokens on L2
+        // `mint_private` on token is public. So we call an internal public function
+        // which then calls the public method on the token contract.
+        // Since the secret_hash is passed, no secret is leaked.
+        TokenBridge::at(context.this_address())._call_mint_on_token(amount, secret_hash_for_redeeming_minted_notes).enqueue(&mut context);
+    }
+    // docs:end:claim_private
+
+    // docs:start:exit_to_l1_private
+    // Burns the appropriate amount of tokens and creates a L2 to L1 withdraw message privately
+    // Requires `msg.sender` (caller of the method) to give approval to the bridge to burn tokens on their behalf using witness signatures
     #[aztec(private)]
-    fn unshield(to: AztecAddress, amount: Field, secret_hash: Field) {
-        assert(storage.minters.at(context.msg_sender()).read(), "caller is not minter");
-        let pending_shields = storage.pending_shields;
-        let mut note = TransparentNote::new(amount, secret_hash);
-        pending_shields.remove_from_private(&mut note);
-        let to_balance = storage.balances.at(to.address).read().add(SafeU120::new(amount));
-        storage.balances.at(to.address).write(to_balance);
-        emit Unlock(to, amount, compute_secret_hash(secret_hash));
-    }
+    fn exit_to_l1_private(
+        token: AztecAddress,
+        recipient: EthAddress, // ethereum address to withdraw to
+        amount: Field,
+        caller_on_l1: EthAddress, // ethereum address that can call this function on the L1 portal (0x0 if anyone can call)
+        nonce: Field // nonce used in the approval message by `msg.sender` to let bridge burn their tokens on L2
+    ) {
+        // Send an L2 to L1 message
+        let content = get_withdraw_content_hash(recipient, amount, caller_on_l1);
+        context.message_portal(storage.portal_address.read_private(), content);
 
+        // docs:start:call_assert_token_is_same
+        // Assert that user provided token address is same as seen in storage.
+        TokenBridge::at(context.this_address())._assert_token_is_same(token).enqueue(&mut context);
+        // docs:end:call_assert_token_is_same
+
+        // Burn tokens
+        Token::at(token).burn(context.msg_sender(), amount, nonce).call(&mut context);
+    }
+    /// docs:end:exit_to_l1_private
+
+    // docs:start:get_token
     #[aztec(public)]
-    fn process_cross_chain_transfer(target_chain: Field, target_address: Field, amount: Field, secret_hash: Field, tx_hash: Field) {
-        assert(storage.minters.at(context.msg_sender()).read(), "caller is not minter");
-        let pending_shields = storage.pending_shields;
-        let mut note = TransparentNote::new(amount, secret_hash);
-        pending_shields.remove_from_private(&mut note);
-        storage.processed_hashes.insert_from_public(&mut note);
-
-        // Logic to handle the transfer to the target chain
-        // Emit event for cross-chain transfer
-        emit Lock(context.msg_sender(), amount, compute_secret_hash(secret_hash));
+    #[aztec(view)]
+    fn get_token() -> AztecAddress {
+        storage.token.read()
     }
+    // docs:end:get_token
+
+    // docs:start:call_mint_on_token
+    // This is a public call as we need to read from public storage.
+    // Also, note that user hashes their secret in private and only sends the hash in public
+    // meaning only user can `redeem_shield` at a later time with their secret.
+    #[aztec(public)]
+    #[aztec(internal)]
+    fn _call_mint_on_token(amount: Field, secret_hash: Field) {
+        Token::at(storage.token.read()).mint_private(amount, secret_hash).call(&mut context);
+    }
+    // docs:end:call_mint_on_token
+
+    // docs:start:assert_token_is_same
+    #[aztec(public)]
+    #[aztec(internal)]
+    fn _assert_token_is_same(token: AztecAddress) {
+        assert(storage.token.read().eq(token), "Token address is not the same as seen in storage");
+    }
+    // docs:end:assert_token_is_same
 }
