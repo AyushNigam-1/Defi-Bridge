@@ -1,130 +1,88 @@
 // docs:start:token_types_all
 use dep::aztec::{
-    note::{
-        note_header::NoteHeader,
-        note_interface::NoteInterface,
-        utils::compute_siloed_note_hash,
-    },
-    hash::{compute_secret_hash, pedersen_hash},
-    context::PrivateContext,
+    note::{note_getter_options::PropertySelector, utils::compute_note_hash_for_consumption},
+    prelude::{NoteHeader, NoteInterface, PrivateContext},
+    protocol_types::{constants::GENERATOR_INDEX__NOTE_NULLIFIER, hash::poseidon2_hash_with_separator}
 };
 
 global TRANSPARENT_NOTE_LEN: Field = 2;
+// TRANSPARENT_NOTE_LEN * 32 + 32(storage_slot as bytes) + 32(note_type_id as bytes)
+global TRANSPARENT_NOTE_BYTES_LEN: Field = 2 * 32 + 64;
 
-// Transparent note represents a note that is created in the clear (public execution),
-// but can only be spent by those that know the preimage of the "secret_hash"
+// Transparent note represents a note that is created in the clear (public execution), but can only be spent by those
+// that know the preimage of the "secret_hash" (the secret). This is typically used when shielding a token balance.
+// Owner of the tokens provides a "secret_hash" as an argument to the public "shield" function and then the tokens
+// can be redeemed in private by presenting the preimage of the "secret_hash" (the secret).
+#[aztec(note)]
 struct TransparentNote {
     amount: Field,
     secret_hash: Field,
-    // the secret is just here for ease of use and won't be (de)serialized
-    secret: Field,
-    // header is just here to satisfy the NoteInterface
-    header: NoteHeader,
 }
 
-impl TransparentNote {
+struct TransparentNoteProperties {
+    amount: PropertySelector,
+    secret_hash: PropertySelector,
+}
 
-    // CONSTRUCTORS
+impl NoteInterface<TRANSPARENT_NOTE_LEN, TRANSPARENT_NOTE_BYTES_LEN> for TransparentNote {
 
-    pub fn new(amount: Field, secret_hash: Field) -> Self {
-        TransparentNote {
-            amount: amount,
-            secret_hash: secret_hash,
-            secret: 0,
-            header: NoteHeader::empty(),
-        }
-    }
-
-    // new oracle call primitive
-    // get me the secret corresponding to this hash
-    pub fn new_from_secret(amount: Field, secret: Field) -> Self {
-        TransparentNote {
-            amount: amount,
-            secret_hash: compute_secret_hash(secret),
-            secret: secret,
-            header: NoteHeader::empty(),
-        }
-    }
-
-
-    // STANDARD NOTE_INTERFACE FUNCTIONS
-
-    pub fn serialize(self) -> [Field; TRANSPARENT_NOTE_LEN] {
+    // Custom serialization to avoid disclosing the secret field
+    fn serialize_content(self) -> [Field; TRANSPARENT_NOTE_LEN] {
         [self.amount, self.secret_hash]
     }
 
-    pub fn deserialize(serialized_note: [Field; TRANSPARENT_NOTE_LEN]) -> Self {
+    // Custom deserialization since we don't have access to the secret plaintext
+    fn deserialize_content(serialized_note: [Field; TRANSPARENT_NOTE_LEN]) -> Self {
         TransparentNote {
             amount: serialized_note[0],
             secret_hash: serialized_note[1],
-            secret: 0,
             header: NoteHeader::empty(),
         }
     }
 
-    pub fn compute_note_hash(self) -> Field {
-        // TODO(#1205) Should use a non-zero generator index.
-        pedersen_hash([
-            self.amount,
-            self.secret_hash,
-        ],0)
+    fn compute_note_hash_and_nullifier(self, _context: &mut PrivateContext) -> (Field, Field) {
+        self.compute_note_hash_and_nullifier_without_context()
     }
 
-    pub fn compute_nullifier(self) -> Field {
-        // TODO(#1386): should use `compute_note_hash_for_read_or_nullify` once public functions inject nonce!
-        let siloed_note_hash = compute_siloed_note_hash(TransparentNoteMethods, self);
-        // TODO(#1205) Should use a non-zero generator index.
-        pedersen_hash([self.secret, siloed_note_hash],0)
+    // Computing a nullifier in a transparent note is not guarded by making secret a part of the nullifier preimage (as
+    // is common in other cases) and instead is guarded by the functionality of "redeem_shield" function. There we do
+    // the following:
+    //      1) We pass the secret as an argument to the function and use it to compute a secret hash,
+    //      2) we fetch a note via the "get_notes" oracle which accepts the secret hash as an argument,
+    //      3) the "get_notes" oracle constrains that the secret hash in the returned note matches the one computed in
+    //         circuit. 
+    // This achieves that the note can only be spent by the party that knows the secret.
+    fn compute_note_hash_and_nullifier_without_context(self) -> (Field, Field) {
+        let note_hash_for_nullify = compute_note_hash_for_consumption(self);
+        let nullifier = poseidon2_hash_with_separator([
+            note_hash_for_nullify,
+        ],
+            GENERATOR_INDEX__NOTE_NULLIFIER as Field,
+        );
+        (note_hash_for_nullify, nullifier)
     }
+}
 
-    pub fn set_header(&mut self, header: NoteHeader) {
-        self.header = header;
+impl TransparentNote {
+    // CONSTRUCTORS
+    pub fn new(amount: Field, secret_hash: Field) -> Self {
+        TransparentNote { amount, secret_hash, header: NoteHeader::empty() }
     }
-
 
     // CUSTOM FUNCTIONS FOR THIS NOTE TYPE
-
-    pub fn knows_secret(self, secret: Field) {
-        let hash = compute_secret_hash(secret);
-        assert(self.secret_hash == hash);
+    // Custom serialization forces us to manually create the metadata struct and its getter
+    pub fn properties() -> TransparentNoteProperties {
+        TransparentNoteProperties {
+            amount: PropertySelector { index: 0, offset: 0, length: 32 },
+            secret_hash: PropertySelector { index: 1, offset: 0, length: 32 }
+        }
     }
 }
 
-fn deserialize(serialized_note: [Field; TRANSPARENT_NOTE_LEN]) -> TransparentNote {
-    TransparentNote::deserialize(serialized_note)
+impl Eq for TransparentNote {
+    fn eq(self, other: Self) -> bool {
+        (self.amount == other.amount) & (self.secret_hash == other.secret_hash)
+    }
 }
 
-fn serialize(note: TransparentNote) -> [Field; TRANSPARENT_NOTE_LEN] {
-    note.serialize()
-}
-
-fn compute_note_hash(note: TransparentNote) -> Field {
-    note.compute_note_hash()
-}
-
-fn compute_nullifier(note: TransparentNote) -> Field {
-    note.compute_nullifier()
-}
-
-fn get_header(note: TransparentNote) -> NoteHeader {
-    note.header
-}
-
-fn set_header(note: &mut TransparentNote, header: NoteHeader) {
-    note.set_header(header)
-}
-
-fn broadcast(context: &mut PrivateContext, slot: Field, note: TransparentNote) {
-    assert(false, "TransparentNote does not support broadcast");
-}
-
-global TransparentNoteMethods = NoteInterface {
-    deserialize,
-    serialize,
-    compute_note_hash,
-    compute_nullifier,
-    get_header,
-    set_header,
-    broadcast,
-};
 // docs:end:token_types_all
