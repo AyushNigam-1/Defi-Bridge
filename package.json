@@ -23,7 +23,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "build": "npm run clean && tsc -b",
+    "build:dev": "tsc -b --watch",
+    "clean": "rm -rf ./dest tsconfig.tsbuildinfo",
+    "start": "npm run build && DEBUG='token' node ./dest/index.js"
   },
   "keywords": [],
   "author": "",
