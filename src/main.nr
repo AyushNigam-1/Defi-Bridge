@@ -8,66 +8,35 @@ contract TokenBridge {
     #[aztec(storage)]
     struct Storage {
         token: PublicMutable<AztecAddress>,
-        portal_address: SharedImmutable<EthAddress>,
     }
 
     #[aztec(public)]
     #[aztec(initializer)]
-    fn constructor(token: AztecAddress, portal_address: EthAddress) {
+    fn constructor(token: AztecAddress) {
         storage.token.write(token);
-        storage.portal_address.initialize(portal_address);
-    }
-
-    #[aztec(private)]
-    fn get_portal_address() -> EthAddress {
-        storage.portal_address.read_private()
     }
 
     #[aztec(public)]
-    fn get_portal_address_public() -> EthAddress {
-        storage.portal_address.read_public()
-    }
-
-    #[aztec(public)]
-    fn claim_public(to: AztecAddress, amount: Field, secret: Field, message_leaf_index: Field) {
-        let content_hash = get_mint_public_content_hash(to, amount);
-
-        context.consume_l1_to_l2_message(
-            content_hash,
-            secret,
-            storage.portal_address.read_public(),
-            message_leaf_index
-        );
-
+    fn claim_public(to: AztecAddress, amount: Field) {
         Token::at(storage.token.read()).mint_public(to, amount).call(&mut context);
+        context.emit_unencrypted_log(true);
     }
 
     #[aztec(public)]
     fn exit_to_l1_public(
         recipient: EthAddress,
         amount: Field,
-        caller_on_l1: EthAddress,
-        nonce: Field
+        nonce: Field 
     ) {
-        let content = get_withdraw_content_hash(recipient, amount, caller_on_l1);
-        context.message_portal(storage.portal_address.read_public(), content);
-
         Token::at(storage.token.read()).burn_public(context.msg_sender(), amount, nonce).call(&mut context);
+        context.emit_unencrypted_log(recipient);
     }
-
     #[aztec(private)]
     fn claim_private(
-        secret_hash_for_redeeming_minted_notes: Field,
+        secret_hash_for_redeeming_minted_notes: Field, 
         amount: Field,
         secret_for_L1_to_L2_message_consumption: Field
     ) {
-        let content_hash = get_mint_private_content_hash(secret_hash_for_redeeming_minted_notes, amount);
-        context.consume_l1_to_l2_message(
-            content_hash,
-            secret_for_L1_to_L2_message_consumption,
-            storage.portal_address.read_private()
-        );
-
         TokenBridge::at(context.this_address())._call_mint_on_token(amount, secret_hash_for_redeeming_minted_notes).enqueue(&mut context);
     }
 
@@ -77,11 +46,9 @@ contract TokenBridge {
         recipient: EthAddress,
         amount: Field,
         caller_on_l1: EthAddress,
-        nonce: Field
+        nonce: Field 
     ) {
-        let content = get_withdraw_content_hash(recipient, amount, caller_on_l1);
-        context.message_portal(storage.portal_address.read_private(), content);
-
+        TokenBridge::at(context.this_address())._assert_token_is_same(token).enqueue(&mut context);
         Token::at(token).burn(context.msg_sender(), amount, nonce).call(&mut context);
     }
 
@@ -96,4 +63,11 @@ contract TokenBridge {
     fn _call_mint_on_token(amount: Field, secret_hash: Field) {
         Token::at(storage.token.read()).mint_private(amount, secret_hash).call(&mut context);
     }
+
+    #[aztec(public)]
+    #[aztec(internal)]
+    fn _assert_token_is_same(token: AztecAddress) {
+        assert(storage.token.read().eq(token), "Token address is not the same as seen in storage");
+    }
+
 }
