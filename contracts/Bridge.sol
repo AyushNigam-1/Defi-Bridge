@@ -4,7 +4,7 @@ pragma solidity 0.8.14;
 import "./extension/Admin.sol";
 import "./interface/IBridgeToken.sol";
 
-contract AztecBridge is Admin {
+contract Bridge is Admin {
 
     bool bridgeOn = true;
 
@@ -14,9 +14,10 @@ contract AztecBridge is Admin {
     event TokenSent(address indexed from, address indexed token, uint256 amount);
     event TokenReceived(address indexed to, address indexed token, uint256 amount);
 
-    constructor() {
+    constructor(address token) {
         _owner = msg.sender;
         admin[msg.sender] = true;
+        bridgeable[token] = true;
     }
 
     function bridgeReceive(address _token, uint256 _amount, address _to) external onlyAdmin {

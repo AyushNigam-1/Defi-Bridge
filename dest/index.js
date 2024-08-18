@@ -14,7 +14,6 @@ async function main() {
     const adminWallet = accounts[0];
     const admin = adminWallet.getAddress();
     logger.info(`Deploying token contract...`);
-    // Deploy the contract and set Alice as the admin while doing so
     const tokenContract = await TokenContract.deploy(adminWallet, admin, 'FATHOM', 'FTH', 18).send().deployed();
     logger.info(`Token Contract successfully deployed at address ${tokenContract.address.toShortString()}`);
     const bridgeContract = await TokenBridgeContract.deploy(adminWallet, tokenContract.address).send().deployed();

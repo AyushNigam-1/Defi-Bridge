@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 import "./extension/Admin.sol";
 
-contract AztecBridgeToken is Admin {
+contract BridgeToken is Admin {
 
     constructor()  {
         _name = "FATHOM";
