@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.4/axios.min.js"
+        integrity="sha512-6VJrgykcg/InSIutW2biLwA1Wyq+7bZmMivHw19fI+ycW0jIjsadm8wKQQLlfv3YUS4owfMDlZU38NtaAK6fSg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body class="bg-red-100/50 flex justify-center items-center w-full h-lvh">
+    <div class="bg-white rounded-md m-3 p-3 flex flex-col gap-4 shadow-sm">
+        <div>
+            <h6 class="text-lg text-gray-600">Name</h6>
+            <h5 class="text-xl font-semibold">XDC Test Network</h5>
+        </div>
+        <div>
+            <h6 class="text-lg text-gray-600">Account</h6>
+            <h5 id="xdc_acc" class="text-xl font-semibold"></h5>
+        </div>
+        <div>
+            <h6 class="text-lg text-gray-600">Balance</h6>
+            <h5 id="xdc_bal" class="text-xl font-semibold"></h5>
+        </div>
+        <div>
+            <label for="Amount"
+                class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                <input type="number" id="Amount"
+                    class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                    placeholder="Amount" />
+                <span
+                    class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                    Amount
+                </span>
+            </label>
+        </div>
+        <div class="flex gap-3">
+            <button
+                class="inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-md font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500"
+                href="#">
+                Send to XDC Account
+            </button>
+            <button class="inline-block rounded border border-indigo-600 px-12 py-3 text-md font-medium text-indigo-600 hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                href="#">
+                Send to Aztec Account
+            </button>
+        </div>
+    </div>
+    <div class="bg-white rounded-md m-3 p-3 flex flex-col gap-4">
+        <div>
+            <h6 class="text-lg text-gray-600">Name</h6>
+            <h5 class="text-xl font-semibold">Aztec Test Network</h5>
+        </div>
+        <div>
+            <h6 class="text-lg text-gray-600">Account</h6>
+            <h5 id="aztec-acc" class="text-xl font-semibold"></h5>
+        </div>
+        <div>
+            <h6 class="text-lg text-gray-600">Balance</h6>
+            <h5 id="aztec-bal" class="text-xl font-semibold"></h5>
+        </div>
+        <div>
+            <label for="Amount"
+                class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                <input type="number" id="Amount"
+                    class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                    placeholder="Amount" />
+                <span
+                    class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                    Amount
+                </span>
+            </label>
+        </div>
+        <div class="flex gap-3">
+            <button
+                class="inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-md font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500"
+                href="#">
+                Send to XDC Account
+            </button>
+            <button class="inline-block rounded border border-indigo-600 px-12 py-3 text-md font-medium text-indigo-600 hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                href="#">
+                Send to Aztec Account
+            </button>
+        </div>
+    </div>
+</body>
+<script>
+    (async () => {
+        const account = await axios.get("http://localhost:3000/account-address")
+        xdc_acc.innerText = account.data.accountAddress
+        const balance = await axios.get(`http://localhost:3000/balance/${account.data.accountAddress}`)
+        console.log(balance)
+        xdc_bal.innerText = balance.data.balance
+        // console.log(data)
+        // document.getElementById("id").innerText = xdcAccount
+        // console.log(xdcAccount)
+    })()
+
+
+</script>
+
+</html>

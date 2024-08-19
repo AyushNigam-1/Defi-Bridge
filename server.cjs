@@ -2,8 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const { ethers } = require('ethers');
 const app = express();
+const cors = require('cors')
+app.use(cors())
 app.use(express.json());
-
+console.log(currentAztecAccount)
 const provider = new ethers.JsonRpcProvider(process.env.HARDHAT_NODE_URL);
 
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
@@ -13,6 +15,16 @@ const bridgeTokenABI = require('./artifacts/contracts/BridgeToken.sol/BridgeToke
 
 const bridgeContract = new ethers.Contract(process.env.BRIDGE_CONTRACT_ADDRESS, bridgeABI.abi, wallet);
 const bridgeTokenContract = new ethers.Contract(process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS, bridgeTokenABI.abi, wallet);
+
+app.get('/account-address', (req, res) => {
+    try {
+        const address = wallet.address;
+        res.status(200).send({ accountAddress: address });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: error.message });
+    }
+});
 
 app.post('/set-max-supply', async (req, res) => {
     const { amount } = req.body;
