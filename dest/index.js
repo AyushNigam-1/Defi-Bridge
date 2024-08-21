@@ -3,7 +3,9 @@ import { createDebugLogger, createPXEClient, waitForPXE, } from '@aztec/aztec.js
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import { TokenBridgeContract } from './artifacts/TokenBridge.js';
 import { format } from 'util';
+
 const { PXE_URL = 'http://localhost:8080' } = process.env;
+
 async function main() {
     const logger = createDebugLogger('token');
     const pxe = createPXEClient(PXE_URL);

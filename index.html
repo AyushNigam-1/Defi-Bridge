@@ -55,11 +55,11 @@
         </div>
         <div>
             <h6 class="text-lg text-gray-600">Account</h6>
-            <h5 id="aztec-acc" class="text-xl font-semibold"></h5>
+            <h5 id="aztec_acc" class="text-xl font-semibold"></h5>
         </div>
         <div>
             <h6 class="text-lg text-gray-600">Balance</h6>
-            <h5 id="aztec-bal" class="text-xl font-semibold"></h5>
+            <h5 id="aztec_bal" class="text-xl font-semibold"></h5>
         </div>
         <div>
             <label for="Amount"
@@ -89,10 +89,13 @@
 <script>
     (async () => {
         const account = await axios.get("http://localhost:3000/account-address")
-        xdc_acc.innerText = account.data.accountAddress
-        const balance = await axios.get(`http://localhost:3000/balance/${account.data.accountAddress}`)
+        console.log(account)
+        xdc_acc.innerText = account.data.xdcAccountAddress
+        aztec_acc.innerText = account.data.aztecAccountAddress.value.substring(0, 39)+"..."
+        const balance = await axios.get(`http://localhost:3000/balance/${account.data.xdcAccountAddress}`)
         console.log(balance)
         xdc_bal.innerText = balance.data.balance
+        aztec_bal.innerText = balance.data.aztecAccountBalance
         // console.log(data)
         // document.getElementById("id").innerText = xdcAccount
         // console.log(xdcAccount)
