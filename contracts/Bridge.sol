@@ -11,8 +11,8 @@ contract Bridge is Admin {
     mapping(address => bool) public bridgeable;
     mapping(address => bool) public admins;
 
-    event TokenSent(string indexed from, address indexed token, uint256 amount);
-    event TokenReceived(address indexed to, address indexed token, uint256 amount);
+    event TokenSent(string from, address indexed token, uint256 amount);
+    event TokenReceived(address indexed  to, address indexed token, uint256 amount);
 
     constructor(address token) {
         _owner = msg.sender;
@@ -20,7 +20,7 @@ contract Bridge is Admin {
         bridgeable[token] = true;
     }
 
-    function bridgeReceive(address _token, uint256 _amount, address _to) external onlyAdmin {
+    function bridgeReceive(address _token, uint256 _amount, address _to) external  {
         require(bridgeable[_token], "Token isn't bridgeable");
         
         IBridgeToken token = IBridgeToken(_token);

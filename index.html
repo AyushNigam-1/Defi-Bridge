@@ -11,19 +11,33 @@
 </head>
 
 <body class="bg-red-100/50 flex justify-center items-center gap-10 w-full h-lvh">
-    <div class="bg-white rounded-md m-3 p-3 flex flex-col gap-4 shadow-sm">
+    <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4 shadow-sm">
         <div>
             <h6 class="text-lg text-gray-600">Name</h6>
             <h5 class="text-xl font-semibold">XDC Test Network</h5>
         </div>
         <div>
             <h6 class="text-lg text-gray-600">Account</h6>
-            <div id="xdc_acc" class="flex gap-4 items-center justify-between "></div>
+            <div id="xdc_acc" class="flex gap-4 items-center justify-between my-2">
+                <div class='flex space-x-2 justify-center items-center bg-white dark:invert'>
+                    <span class='sr-only'>Loading...</span>
+                     <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce'></div>
+               </div>
+            </div>
            
         </div>
         <div>
             <h6 class="text-lg text-gray-600">Balance</h6>
-            <h5 id="xdc_bal" class="text-xl font-semibold"></h5>
+            <div id="xdc_bal" class="flex gap-4 items-center justify-between my-2">
+                <div class='flex space-x-2 justify-center items-center bg-white dark:invert'>
+                    <span class='sr-only'>Loading...</span>
+                     <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce'></div>
+               </div>
+            </div>
         </div>
         <div>
             <label for="Amount"
@@ -52,18 +66,32 @@
     <div>
         <img width="50" height="50" src="https://img.icons8.com/ios/50/data-in-both-directions.png" alt="data-in-both-directions"/>
     </div>
-    <div class="bg-white rounded-md m-3 p-3 flex flex-col gap-4">
+    <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4">
         <div>
             <h6 class="text-lg text-gray-600">Name</h6>
             <h5 class="text-xl font-semibold">Aztec Test Network</h5>
         </div>
         <div>
             <h6 class="text-lg text-gray-600">Account</h6>
-            <div id="aztec_acc" class="flex gap-4 items-center justify-between "></div>
+            <div id="aztec_acc" class="flex gap-4 items-center justify-between my-2">
+                <div class='flex space-x-2 justify-center items-center bg-white dark:invert'>
+                    <span class='sr-only'>Loading...</span>
+                     <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce'></div>
+               </div>
+            </div>
         </div>
         <div>
             <h6 class="text-lg text-gray-600">Balance</h6>
-            <h5 id="aztec_bal" class="text-xl font-semibold"></h5>
+            <div id="aztec_bal" class="flex gap-4 items-center justify-between my-2">
+                <div class='flex space-x-2 justify-center items-center bg-white dark:invert'>
+                    <span class='sr-only'>Loading...</span>
+                     <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                   <div class='h-5 w-5 bg-gray-600 rounded-full animate-bounce'></div>
+               </div>
+            </div>
         </div>
         <div>
             <label for="Amount"
@@ -97,12 +125,11 @@
         const account = await axios.get("http://localhost:3000/account-address")
         azteAcc = account.data.aztecAccountAddress.value
         xdcAcc = account.data.xdcAccountAddress
-
-        xdc_acc.innerHTML =`<p class="text-xl font-semibold" >${xdcAcc}</p> <button onclick="copy('${xdcAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>` 
+        xdc_acc.innerHTML =`<h5 class="text-xl font-semibold" >${xdcAcc}</h5> <button onclick="copy('${xdcAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>` 
         aztec_acc.innerHTML = `<p class="text-xl font-semibold" >${azteAcc.substring(0, 42)+"..."}</p> <button onclick="copy('${azteAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>` 
         const balance = await axios.get(`http://localhost:3000/balance/${xdcAcc}`)
-        xdc_bal.innerText = balance.data.balance
-        aztec_bal.innerText = balance.data.aztecAccountBalance
+        xdc_bal.innerHTML =`<h5 class="text-xl font-semibold" > ${balance.data.balance} FTH </h5>`
+        aztec_bal.innerHTML =` <h5 class="text-xl font-semibold" > ${balance.data.aztecAccountBalance} WFTH </h5>`
     })()
     const copy = (text) => {
         console.log(text)

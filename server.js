@@ -9,16 +9,23 @@ import {
     Contract,
     createPXEClient,
     waitForPXE,
-    loadContractArtifact
+    loadContractArtifact,
+    Fr
 } from '@aztec/aztec.js';
+const crypto = require("crypto");
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
-// import { TokenBridgeContract } from './src/artifacts/TokenBridge';
 import TokenBridgeContractArtifactJson from './target/token_contract-TokenBridge.json' with { type: 'json' };
 export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContractArtifactJson);
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+function generateRandomNonce() {
+    // Generate a random 32-byte nonce
+    const randomBytes = crypto.randomBytes(32);
+    return BigInt('0x' + randomBytes.toString('hex'));
+}
 const PXE_URL = process.env.PXE_URL || 'http://localhost:8080';
 
 const pxe = createPXEClient(PXE_URL);
@@ -105,9 +112,7 @@ app.get('/balance/:address', async (req, res) => {
         const balance = await bridgeTokenContract.balanceOf(address);
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const contractAddress = await aztecBridgeTokenContract.methods.get_token().simulate()
-        console.log(contractAddress)
-        console.log(aztecAccountBalance)
-        res.status(200).send({ balance: ethers.formatUnits(balance, 18), aztecAccountBalance: aztecAccountBalance.toString() });
+        res.status(200).send({ balance: ethers.formatUnits(balance, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18) });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
@@ -115,24 +120,35 @@ app.get('/balance/:address', async (req, res) => {
 });
 
 app.post('/bridge-send', async (req, res) => {
-    const { amount, to } = req.body;
-    console.log(  process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
-                ethers.parseUnits(amount.toString(), 18),
-                to)
-            // const tx = await bridgeTokenContract.getOwner()
-            // console.log(tx)
-    try {
-        const tx = await bridgeContract.bridgeSend(
-            process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
+    const { amount, to, token } = req.body;
+    if (token == 'WFTH') {
+        try {
+            await aztecBridgeTokenContract.methods.exit_to_l1_public(aliceWallet.getAddress(), ethers.parseUnits(amount.toString(), 18), generateRandomNonce(), 0).send()
+           const tx = await bridgeContract.bridgeReceive(  process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
             ethers.parseUnits(amount.toString(), 18),
-            to
-        );
-        await tx.wait();
-        res.status(200).send({ message: 'Tokens sent successfully', transactionHash: tx.hash });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: error.message });
+            to)
+           await tx.wait();
+           res.status(200).send({ message: 'Tokens sent successfully', transactionHash: tx.hash });
+       } catch (error) {
+           console.error(error);
+           res.status(500).send({ error: error.message });
+       }
     }
+    else {
+        try {
+            const tx = await bridgeContract.bridgeSend(
+                process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
+                ethers.parseUnits(amount.toString(), 18),
+                to
+            );
+            await tx.wait();
+            res.status(200).send({ message: 'Tokens sent successfully', transactionHash: tx.hash });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send({ error: error.message });
+        }
+    }
+
 });
 
 app.post('/bridge-receive', async (req, res) => {
@@ -151,30 +167,23 @@ app.post('/bridge-receive', async (req, res) => {
     }
 });
 
-bridgeContract.on('TokenSent', async (from, to, value, event) => {
-    console.log(`Transfer event detected:
-        From: ${from}
-        To: ${to}
-        Value: ${ethers.formatUnits(value, 18)}
-        Transaction Hash: ${event.transactionHash}`);
-
+bridgeContract.on('TokenSent', async (to, token, value) => {
     const toAddress = AztecAddress.fromString(to);
     const amount = new Fr(BigInt(value));
-
-    // try {
-    //     const transfer = await aztecBridgeTokenContract.methods.claim_public(toAddress, amount).send();
-    //     transfer.logs.forEach(log => {
-    //         if (log.event === 'UnencryptedLog' && log.args[0] === true) {
-    //             console.log('Transfer successful and unencrypted log emitted:', transfer);
-    //             return true;  
-    //         }
-    //     });
-    //     console.log('Transfer executed, but no matching log found');
-    //     return false;  // Indicate failure if no log is found
-    // } catch (error) {
-    //     console.error('Transfer failed:', error);
-    //     return false; // Indicate failure
-    // }
+    try {
+        const transfer = await aztecBridgeTokenContract.methods.claim_public(toAddress, amount).send({ from: aliceWallet });
+        transfer.logs.forEach(log => {
+            if (log.event === 'UnencryptedLog' && log.args[0] === true) {
+                console.log('Transfer successful and unencrypted log emitted:', transfer);
+                return true;
+            }
+        });
+        console.log('Transfer executed, but no matching log found');
+        return false;
+    } catch (error) {
+        console.error('Transfer failed:', error);
+        return false;
+    }
 });
 
 bridgeContract.on('TokenReceived', (from, value, event) => {

@@ -19,21 +19,15 @@ contract TokenBridge {
     #[aztec(public)]
     fn claim_public(to: AztecAddress, amount: Field) {
         Token::at(storage.token.read()).mint_public(to, amount).call(&mut context);
-        context.emit_unencrypted_log(true);
     }
 
     #[aztec(public)]
-    fn exit_to_l1_public(
-        recipient: EthAddress,
-        amount: Field,
-        nonce: Field 
-    ) {
-        Token::at(storage.token.read()).burn_public(context.msg_sender(), amount, nonce).call(&mut context);
-        context.emit_unencrypted_log(recipient);
+    fn exit_to_l1_public(sender: AztecAddress, amount: Field, nonce: Field) {
+        Token::at(storage.token.read()).burn_public(sender, amount, nonce).call(&mut context);
     }
     #[aztec(private)]
     fn claim_private(
-        secret_hash_for_redeeming_minted_notes: Field, 
+        secret_hash_for_redeeming_minted_notes: Field,
         amount: Field,
         secret_for_L1_to_L2_message_consumption: Field
     ) {
@@ -46,7 +40,7 @@ contract TokenBridge {
         recipient: EthAddress,
         amount: Field,
         caller_on_l1: EthAddress,
-        nonce: Field 
+        nonce: Field
     ) {
         TokenBridge::at(context.this_address())._assert_token_is_same(token).enqueue(&mut context);
         Token::at(token).burn(context.msg_sender(), amount, nonce).call(&mut context);
@@ -69,5 +63,4 @@ contract TokenBridge {
     fn _assert_token_is_same(token: AztecAddress) {
         assert(storage.token.read().eq(token), "Token address is not the same as seen in storage");
     }
-
 }

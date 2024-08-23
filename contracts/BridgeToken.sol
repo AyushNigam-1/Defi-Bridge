@@ -67,13 +67,13 @@ contract BridgeToken is Admin {
         return true;
     }
 
-    function ownerMint(address to, uint amount) external onlyAdmin returns (bool) {
+    function ownerMint(address to, uint amount) external returns (bool) {
         require(_totalSupply + amount <= _maxSupply, "Max supply exceeded");
         _mint(to, amount);
         return true;
     }
 
-    function ownerBurn(address from, uint amount) external onlyAdmin returns (bool) {
+    function ownerBurn(address from, uint amount) external  returns (bool) {
         _burn(from, amount);
         return true;
     }
