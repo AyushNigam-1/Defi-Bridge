@@ -20,6 +20,7 @@ async function main() {
     const bridgeContract = await TokenBridgeContract.deploy(adminWallet, tokenContract.address).send().deployed();
     console.log(`Token Bridge Contract successfully deployed at address ${bridgeContract.address.toShortString()}`);
     await tokenContract.methods.set_minter(bridgeContract.address,true).send({from:adminWallet})
+    await tokenContract.methods.set_admin(bridgeContract.address,true).send({from:adminWallet})
     console.log(`Token Bridge Minter Set`);
 
 }

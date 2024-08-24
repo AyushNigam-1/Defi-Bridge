@@ -39,16 +39,16 @@ export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContr
  * Type-safe interface for contract TokenBridge;
  */
 export class TokenBridgeContract extends ContractBase {
-  
+
   private constructor(
     instance: ContractInstanceWithAddress,
     wallet: Wallet,
   ) {
     super(instance, TokenBridgeContractArtifact, wallet);
   }
-  
 
-  
+
+
   /**
    * Creates a contract instance.
    * @param address - The deployed contract's address.
@@ -62,7 +62,7 @@ export class TokenBridgeContract extends ContractBase {
     return Contract.at(address, TokenBridgeContract.artifact, wallet) as Promise<TokenBridgeContract>;
   }
 
-  
+
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
@@ -93,65 +93,65 @@ export class TokenBridgeContract extends ContractBase {
       opts.method ?? 'constructor',
     );
   }
-  
 
-  
+
+
   /**
    * Returns this contract's artifact.
    */
   public static get artifact(): ContractArtifact {
     return TokenBridgeContractArtifact;
   }
-  
+
 
   public static get storage(): ContractStorageLayout<'admin' | 'minters' | 'balances' | 'total_supply' | 'pending_shields' | 'public_balances' | 'symbol' | 'name' | 'decimals'> {
-      return {
-        admin: {
-      slot: new Fr(1n),
-    },
-minters: {
-      slot: new Fr(2n),
-    },
-balances: {
-      slot: new Fr(3n),
-    },
-total_supply: {
-      slot: new Fr(4n),
-    },
-pending_shields: {
-      slot: new Fr(5n),
-    },
-public_balances: {
-      slot: new Fr(6n),
-    },
-symbol: {
-      slot: new Fr(7n),
-    },
-name: {
-      slot: new Fr(8n),
-    },
-decimals: {
-      slot: new Fr(9n),
-    }
-      } as ContractStorageLayout<'admin' | 'minters' | 'balances' | 'total_supply' | 'pending_shields' | 'public_balances' | 'symbol' | 'name' | 'decimals'>;
-    }
-    
+    return {
+      admin: {
+        slot: new Fr(1n),
+      },
+      minters: {
+        slot: new Fr(2n),
+      },
+      balances: {
+        slot: new Fr(3n),
+      },
+      total_supply: {
+        slot: new Fr(4n),
+      },
+      pending_shields: {
+        slot: new Fr(5n),
+      },
+      public_balances: {
+        slot: new Fr(6n),
+      },
+      symbol: {
+        slot: new Fr(7n),
+      },
+      name: {
+        slot: new Fr(8n),
+      },
+      decimals: {
+        slot: new Fr(9n),
+      }
+    } as ContractStorageLayout<'admin' | 'minters' | 'balances' | 'total_supply' | 'pending_shields' | 'public_balances' | 'symbol' | 'name' | 'decimals'>;
+  }
+
 
   public static get notes(): ContractNotes<'TransparentNote' | 'TokenNote'> {
     return {
       TransparentNote: {
-          id: new NoteSelector(1049878767),
-        },
-TokenNote: {
-          id: new NoteSelector(3992089675),
-        }
+        id: new NoteSelector(1049878767),
+      },
+      TokenNote: {
+        id: new NoteSelector(3992089675),
+      }
     } as ContractNotes<'TransparentNote' | 'TokenNote'>;
   }
-  
+
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public override methods!: {
-    
+
     /** exit_to_l1_private(token: struct, recipient: struct, amount: field, caller_on_l1: struct, nonce: field) */
     exit_to_l1_private: ((token: AztecAddressLike, recipient: EthAddressLike, amount: FieldLike, caller_on_l1: EthAddressLike, nonce: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
@@ -174,5 +174,5 @@ TokenNote: {
     claim_public: ((to: AztecAddressLike, amount: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
   };
 
-  
+
 }

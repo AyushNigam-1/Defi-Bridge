@@ -12,7 +12,7 @@ import {
     loadContractArtifact,
     Fr
 } from '@aztec/aztec.js';
-const crypto = require("crypto");
+import crypto from "crypto"
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import TokenBridgeContractArtifactJson from './target/token_contract-TokenBridge.json' with { type: 'json' };
 export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContractArtifactJson);
@@ -122,17 +122,19 @@ app.get('/balance/:address', async (req, res) => {
 app.post('/bridge-send', async (req, res) => {
     const { amount, to, token } = req.body;
     if (token == 'WFTH') {
+        console.log(amount, to,token)
         try {
-            await aztecBridgeTokenContract.methods.exit_to_l1_public(aliceWallet.getAddress(), ethers.parseUnits(amount.toString(), 18), generateRandomNonce(), 0).send()
-           const tx = await bridgeContract.bridgeReceive(  process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
-            ethers.parseUnits(amount.toString(), 18),
-            to)
-           await tx.wait();
-           res.status(200).send({ message: 'Tokens sent successfully', transactionHash: tx.hash });
-       } catch (error) {
-           console.error(error);
-           res.status(500).send({ error: error.message });
-       }
+            const aztecBurn = await aztecTokenContract.methods.burn_public(aliceWallet.getAddress(), ethers.parseUnits(amount.toString(), 18), 0).send({from:aliceWallet})
+            aztecBurn.wait()
+            const xdcMint = await bridgeContract.bridgeReceive(process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
+                ethers.parseUnits(amount.toString(), 18),
+                to)
+            await xdcMint.wait();
+            res.status(200).send({ message: 'Tokens sent successfully', transactionHash: tx.hash });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send({ error: error.message });
+        }
     }
     else {
         try {
@@ -172,12 +174,6 @@ bridgeContract.on('TokenSent', async (to, token, value) => {
     const amount = new Fr(BigInt(value));
     try {
         const transfer = await aztecBridgeTokenContract.methods.claim_public(toAddress, amount).send({ from: aliceWallet });
-        transfer.logs.forEach(log => {
-            if (log.event === 'UnencryptedLog' && log.args[0] === true) {
-                console.log('Transfer successful and unencrypted log emitted:', transfer);
-                return true;
-            }
-        });
         console.log('Transfer executed, but no matching log found');
         return false;
     } catch (error) {
@@ -187,7 +183,7 @@ bridgeContract.on('TokenSent', async (to, token, value) => {
 });
 
 bridgeContract.on('TokenReceived', (from, value, event) => {
-    console.log(`Burn event detected:
+    console.log(`Mint event detected:
         From: ${from}
         Value: ${ethers.formatUnits(value, 18)}
         Transaction Hash: ${event.transactionHash}`);
