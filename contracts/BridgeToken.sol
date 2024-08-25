@@ -14,6 +14,7 @@ contract BridgeToken is Admin {
         _owner = msg.sender;
         admin[msg.sender] = true;
        _mint(msg.sender, 1000 * (10 ** uint(_decimals)));
+       _maxSupply = 1000 * (10 ** uint(_decimals));
     }
 
     uint _totalSupply;
