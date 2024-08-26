@@ -21,137 +21,275 @@
 
 </head>
 
-<body class="bg-red-100/50 flex justify-center items-center gap-10 w-full h-lvh">
-    <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4 shadow-sm">
-        <div>
-            <h6 class="text-lg text-gray-600">Name</h6>
-            <h5 class="text-xl font-semibold">XDC Test Network</h5>
-        </div>
-        <div>
-            <h6 class="text-lg text-gray-600">Account</h6>
-            <div id="xdc_acc" class="flex gap-4 items-center justify-between my-2">
-                <svg aria-hidden="true" role="status"
-                    class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101"
-                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor" />
-                    <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="#1C64F2" />
-                </svg>
-            </div>
+<body class="w-full h-lvh bg-red-100/50 container mx-auto">
+    <span class=" flex flex-col gap-10 justify-between  mx-auto">
+        <div class="flex items-center justify-center gap-10">
+            <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4 shadow-sm">
+                <div>
+                    <h6 class="text-lg text-gray-600">Name</h6>
+                    <h5 class="text-xl font-semibold">XDC Test Network</h5>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Account</h6>
+                    <div id="xdc_acc" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Balance</h6>
+                    <div id="xdc_bal" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Amount</h6>
+                    <label for="Amount"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
+                        <input type="number" id="xdcAmount"
+                            class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="Amount in FTH" />
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Amount in FTH
+                        </span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#" onclick="showToast()">
+                        Send to XDC Account
+                    </button>
+                    <button onclick="fromXDCToAztec(event)"
+                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#">
 
-        </div>
-        <div>
-            <h6 class="text-lg text-gray-600">Balance</h6>
-            <div id="xdc_bal" class="flex gap-4 items-center justify-between my-2">
-                <svg aria-hidden="true" role="status"
-                    class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101"
-                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor" />
-                    <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="#1C64F2" />
-                </svg>
+                        Send to Aztec Account
+                    </button>
+                </div>
+            </div>
+            <div>
+                <img width="50" height="50" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
+                    alt="data-in-both-directions" />
+            </div>
+            <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4">
+                <div>
+                    <h6 class="text-lg text-gray-600">Name</h6>
+                    <h5 class="text-xl font-semibold">Aztec Test Network</h5>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Account</h6>
+                    <div id="aztec_acc" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Balance</h6>
+                    <div id="aztec_bal" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Amount</h6>
+                    <label for="Amount"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
+
+                        <input type="number" id="aztecAmount"
+                            class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="Amount in WFTH" />
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Amount in WFTH
+                        </span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        class="inline-block text-center rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#" onclick="fromAztecToXDC(event)">
+                        Send to XDC Account
+                    </button>
+                    <button
+                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#">
+                        Send to Aztec Account
+                    </button>
+                </div>
             </div>
         </div>
-        <div>
-            <h6 class="text-lg text-gray-600">Amount</h6>
-            <label for="Amount"
-                class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
-                <input type="number" id="xdcAmount"
-                    class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
-                    placeholder="Amount in FTH" />
-                <span
-                    class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
-                    Amount in FTH
-                </span>
-            </label>
+        <div class="flex justify-between mx-[370px]">
+            <img width="50" height="50" class="rotate-90" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
+                alt="data-in-both-directions" />
+            <img width="50" height="50" class="rotate-90" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
+                alt="data-in-both-directions" />
         </div>
-        <div class="flex gap-3">
-            <button
-                class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
-                href="#" onclick="showToast()">
-                Send to XDC Account
-            </button>
-            <button onclick="fromXDCToAztec(event)"
-                class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
-                href="#">
+        <div class="flex items-center justify-center gap-10">
+            <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4 shadow-sm">
+                <div>
+                    <h6 class="text-lg text-gray-600">Name</h6>
+                    <h5 class="text-xl font-semibold">XDC Test Network</h5>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Account</h6>
+                    <div id="xdc2_acc" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Balance</h6>
+                    <div id="xdc2_bal" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Amount</h6>
+                    <label for="Amount"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
+                        <input type="number" id="xdcAmount"
+                            class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="Amount in FTH" />
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Amount in FTH
+                        </span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#" onclick="showToast()">
+                        Send to XDC Account
+                    </button>
+                    <button onclick="fromXDCToAztec(event)"
+                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#">
 
-                Send to Aztec Account
-            </button>
-        </div>
-    </div>
-    <div>
-        <img width="50" height="50" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
-            alt="data-in-both-directions" />
-    </div>
-    <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4">
-        <div>
-            <h6 class="text-lg text-gray-600">Name</h6>
-            <h5 class="text-xl font-semibold">Aztec Test Network</h5>
-        </div>
-        <div>
-            <h6 class="text-lg text-gray-600">Account</h6>
-            <div id="aztec_acc" class="flex gap-4 items-center justify-between my-2">
-                <svg aria-hidden="true" role="status"
-                    class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101"
-                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor" />
-                    <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="#1C64F2" />
-                </svg>
+                        Send to Aztec Account
+                    </button>
+                </div>
+            </div>
+            <div>
+                <img width="50" height="50" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
+                    alt="data-in-both-directions" />
+            </div>
+            <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4">
+                <div>
+                    <h6 class="text-lg text-gray-600">Name</h6>
+                    <h5 class="text-xl font-semibold">Aztec Test Network</h5>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Account</h6>
+                    <div id="aztec2_acc" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Balance</h6>
+                    <div id="aztec2_bal" class="flex gap-4 items-center justify-between my-2">
+                        <svg aria-hidden="true" role="status"
+                            class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-lg text-gray-600">Amount</h6>
+                    <label for="Amount"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
+
+                        <input type="number" id="aztecAmount2"
+                            class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="Amount in WFTH" />
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Amount in WFTH
+                        </span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        class="inline-block text-center rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#" onclick="fromAztecToXDC(event)">
+                        Send to XDC Account
+                    </button>
+                    <button
+                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
+                        href="#">
+                        Send to Aztec Account
+                    </button>
+                </div>
             </div>
         </div>
-        <div>
-            <h6 class="text-lg text-gray-600">Balance</h6>
-            <div id="aztec_bal" class="flex gap-4 items-center justify-between my-2">
-                <svg aria-hidden="true" role="status"
-                    class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101"
-                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor" />
-                    <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="#1C64F2" />
-                </svg>
-            </div>
-        </div>
-        <div>
-            <h6 class="text-lg text-gray-600">Amount</h6>
-
-            <label for="Amount"
-                class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
-
-                <input type="number" id="aztecAmount"
-                    class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
-                    placeholder="Amount in WFTH" />
-                <span
-                    class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
-                    Amount in WFTH
-                </span>
-            </label>
-        </div>
-        <div class="flex gap-3">
-            <button
-                class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
-                href="#" onclick="fromAztecToXDC(event)">
-                Send to XDC Account
-            </button>
-            <button
-                class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
-                href="#">
-                Send to Aztec Account
-            </button>
-        </div>
-    </div>
+    </span>
 </body>
 <script>
     let azteAcc
@@ -161,16 +299,23 @@
         try {
             account = await axios.get("http://localhost:3000/account-address")
             azteAcc = account.data.aztecAccountAddress.value
+            azteAcc2 = account.data.aztecAccountAddress2.value
             xdcAcc = account.data.xdcAccountAddress
+            xdcAcc2 = account.data.xdcAccountAddress2
             xdc_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc}</h5> <button onclick="copy('${xdcAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
+            xdc2_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc2}</h5> <button onclick="copy('${xdcAcc2}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
             aztec_acc.innerHTML = `<p class="text-xl font-semibold" >${azteAcc.substring(0, 42) + "..."}</p> <button onclick="copy('${azteAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
+            aztec2_acc.innerHTML = `<p class="text-xl font-semibold" >${azteAcc2.substring(0, 42) + "..."}</p> <button onclick="copy('${azteAcc2}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
         } catch (error) {
             showToast("Something went wrong!", false)
         }
         try {
             const balance = await axios.get(`http://localhost:3000/balance/${xdcAcc}`)
-            xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${balance.data.balance} FTH </h5>`
+            xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${balance.data.balance1} FTH </h5>`
+            xdc2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${balance.data.balance2} FTH </h5>`
+
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${balance.data.aztecAccountBalance} WFTH </h5>`
+            aztec2_bal.innerHTML =` <h5 class="text-xl font-semibold" > ${balance.data.aztecAccountBalance2} WFTH </h5>`
         } catch (error) {
             showToast("Something went wrong!", false)
         }
@@ -182,10 +327,10 @@
     }
     const fromXDCToAztec = async (event) => {
         let title = event.target.innerText
-        event.target.innerHTML = `<svg aria-hidden="true" role="status" class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="#1C64F2"/>
-                    </svg>`
+        event.target.innerHTML = `<svg width="20" height="20" fill="currentColor" class="mx-auto animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+        <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z">
+        </path>
+    </svg>`
         try {
             const tx = await axios.post("http://localhost:3000/bridge-send", { amount: xdcAmount.value, to: azteAcc, token: "FTH", from: xdcAcc })
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance} FTH </h5>`
@@ -202,13 +347,13 @@
     }
     const fromAztecToXDC = async (event) => {
         let title = event.target.innerText
-        event.target.innerHTML = `<svg aria-hidden="true" role="status" class="inline w-6 h-6 me-3 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="#1C64F2"/>
-                    </svg>`
+        event.target.innerHTML = `<svg width="20" height="20" fill="currentColor" class=" mx-auto animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+        <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z">
+        </path>
+    </svg>`
         try {
-            const tx = await axios.post("http://localhost:3000/bridge-send", { amount: aztecAmount.value, to: xdcAcc, token: "WFTH" , from:azteAcc })
-            xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance} FTH </h5>`
+            const tx = await axios.post("http://localhost:3000/bridge-send", { amount: aztecAmount.value, to: xdcAcc, token: "WFTH", from: azteAcc })
+            xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance1} FTH </h5>`
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} WFTH </h5>`
             showToast("Transaction Completed", true)
             aztecAmount.value = ""
@@ -229,12 +374,8 @@
             position: "center",
             backgroundColor: status ? "#4CAF50" : "rgb(255, 102, 102)",
             stopOnFocus: true,
-            onClick: function () { } // Keep this as an empty function or add your own callback
         });
-
-        // Show the toast
         toast.showToast();
-
     }
 </script>
 
