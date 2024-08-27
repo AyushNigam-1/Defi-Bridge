@@ -83,11 +83,11 @@ contract BridgeToken is Admin {
         return _allowed[owner][spender];
     }
 
-    function transfer(address to, uint value) public returns (bool) {
+    function transfer(address from , address to, uint value) public returns (bool) {
         require(value <= balanceOf[msg.sender], "Insufficient balance");
         require(to != address(0), "Invalid address");
 
-        _transfer(msg.sender, to, value);
+        _transfer(from, to, value);
         return true;
     }
 

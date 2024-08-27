@@ -78,7 +78,7 @@
                         href="#" onclick="showToast()">
                         Send to XDC Account
                     </button>
-                    <button onclick="fromXDCToAztec(event)"
+                    <button onclick="fromXDCToAztec(event,xdc_acc.innerText,'', xdcAmount.value)"
                         class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
                         href="#">
 
@@ -154,10 +154,10 @@
             </div>
         </div>
         <div class="flex justify-between mx-[370px]">
-            <img width="50" height="50" class="rotate-90" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
-                alt="data-in-both-directions" />
-            <img width="50" height="50" class="rotate-90" src="https://img.icons8.com/ios/50/data-in-both-directions.png"
-                alt="data-in-both-directions" />
+            <img width="50" height="50" class="rotate-90"
+                src="https://img.icons8.com/ios/50/data-in-both-directions.png" alt="data-in-both-directions" />
+            <img width="50" height="50" class="rotate-90"
+                src="https://img.icons8.com/ios/50/data-in-both-directions.png" alt="data-in-both-directions" />
         </div>
         <div class="flex items-center justify-center gap-10">
             <div class="bg-white rounded-md m-3 p-5 flex flex-col gap-4 shadow-sm">
@@ -199,7 +199,7 @@
                     <h6 class="text-lg text-gray-600">Amount</h6>
                     <label for="Amount"
                         class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 my-2">
-                        <input type="number" id="xdcAmount"
+                        <input type="number" id="xdc2Amount"
                             class="peer py-2 w-full px-2 border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="Amount in FTH" />
                         <span
@@ -214,7 +214,7 @@
                         href="#" onclick="showToast()">
                         Send to XDC Account
                     </button>
-                    <button onclick="fromXDCToAztec(event)"
+                    <button onclick="fromXDCToAztec(event,xdc2_acc.innerText,2, xdc2Amount.value)"
                         class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
                         href="#">
 
@@ -293,19 +293,21 @@
 </body>
 <script>
     let azteAcc
+    let azteAcc2
     let xdcAcc
+    let xdcAcc2
     (async () => {
         let account
         try {
             account = await axios.get("http://localhost:3000/account-address")
-            azteAcc = account.data.aztecAccountAddress.value
-            azteAcc2 = account.data.aztecAccountAddress2.value
+            aztecAcc = account.data.aztecAccountAddress.value
+            aztecAcc2 = account.data.aztecAccountAddress2.value
             xdcAcc = account.data.xdcAccountAddress
             xdcAcc2 = account.data.xdcAccountAddress2
-            xdc_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc}</h5> <button onclick="copy('${xdcAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
-            xdc2_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc2}</h5> <button onclick="copy('${xdcAcc2}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
-            aztec_acc.innerHTML = `<p class="text-xl font-semibold" >${azteAcc.substring(0, 42) + "..."}</p> <button onclick="copy('${azteAcc}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
-            aztec2_acc.innerHTML = `<p class="text-xl font-semibold" >${azteAcc2.substring(0, 42) + "..."}</p> <button onclick="copy('${azteAcc2}')" class="pointer text-indigo-600 font-bold"> Copy </button>`
+            xdc_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc}</h5> `
+            xdc2_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc2}</h5> <`
+            aztec_acc.innerHTML = `<p class="text-xl font-semibold" >${aztecAcc.substring(0, 42) + "..."}</p> `
+            aztec2_acc.innerHTML = `<p class="text-xl font-semibold" >${aztecAcc2.substring(0, 42) + "..."}</p> `
         } catch (error) {
             showToast("Something went wrong!", false)
         }
@@ -315,24 +317,22 @@
             xdc2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${balance.data.balance2} FTH </h5>`
 
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${balance.data.aztecAccountBalance} WFTH </h5>`
-            aztec2_bal.innerHTML =` <h5 class="text-xl font-semibold" > ${balance.data.aztecAccountBalance2} WFTH </h5>`
+            aztec2_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${balance.data.aztecAccountBalance2} WFTH </h5>`
         } catch (error) {
             showToast("Something went wrong!", false)
         }
 
     })()
-    const copy = (text) => {
-        console.log(text)
-        navigator.clipboard.writeText(text)
-    }
-    const fromXDCToAztec = async (event) => {
+
+    const fromXDCToAztec = async (event, from, to, amount) => {
+        console.log(from, to, amount)
         let title = event.target.innerText
         event.target.innerHTML = `<svg width="20" height="20" fill="currentColor" class="mx-auto animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
         <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z">
         </path>
     </svg>`
         try {
-            const tx = await axios.post("http://localhost:3000/bridge-send", { amount: xdcAmount.value, to: azteAcc, token: "FTH", from: xdcAcc })
+            const tx = await axios.post("http://localhost:3000/bridge-send", { amount, to: eval(`aztecAcc${to}`), token: "FTH", from })
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance} FTH </h5>`
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} WFTH </h5>`
             showToast("Transaction Completed", true)
@@ -365,7 +365,9 @@
         }
 
     }
-
+    const xdctoxdc = (to , from , amount) => {
+const tx = axios.post("https://localhost:3000/xdc-transfer",{to , from , amount})
+    }
     function showToast(msg, status) {
         let toast = Toastify({
             text: msg,

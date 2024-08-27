@@ -20,12 +20,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-function generateRandomNonce() {
-    // Generate a random 32-byte nonce
-    const randomBytes = crypto.randomBytes(32);
-    return BigInt('0x' + randomBytes.toString('hex'));
-}
 const PXE_URL = process.env.PXE_URL || 'http://localhost:8080';
 
 const pxe = createPXEClient(PXE_URL);
@@ -131,6 +125,8 @@ app.post('/bridge-send', async (req, res) => {
         }
     }
     else {
+        let acc = aliceWallet.getAddress().toString().includes(to) ? aliceWallet.getAddress() : johnWallet.getAddress()
+        console.log(acc)
         try {
             const xdcBurn = await bridgeContract.bridgeSend(
                 process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
@@ -138,7 +134,7 @@ app.post('/bridge-send', async (req, res) => {
                 to
             );
             await xdcBurn.wait()
-            const aztecMint = await aztecBridgeTokenContract.methods.claim_public(toAddress, amount).send({ from: aliceWallet });
+            const aztecMint = await aztecBridgeTokenContract.methods.claim_public(to, ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet });
             await aztecMint.wait()
             const balance = await bridgeTokenContract.balanceOf(from);
             const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(to).simulate()
@@ -152,16 +148,19 @@ app.post('/bridge-send', async (req, res) => {
 
 });
 
-app.post('/bridge-receive', async (req, res) => {
-    const { tokenAddress, amount, to } = req.body;
+app.post('/xdc-transfer', async (req, res) => {
+    const { tokenAddress, to ,from , amount } = req.body;
     try {
-        const tx = await bridgeContract.bridgeReceive(
+        const tx = await bridgeTokenContract.transfer(
             tokenAddress,
+            from,
             ethers.parseUnits(amount.toString(), 18),
             to
         );
         await tx.wait();
-        res.status(200).send({ message: 'Tokens received and minted successfully', transactionHash: tx.hash });
+        const balance1 = await bridgeTokenContract.balanceOf(from);
+        const balance2 = await bridgeTokenContract.balanceOf(to);
+        res.status(200).send({ message: 'Tokens received and minted successfully', balance1 , balance2});
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
