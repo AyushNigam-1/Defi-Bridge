@@ -49,7 +49,7 @@ app.get('/account-address', async (req, res) => {
     try {
         const address = wallet1.address;
         const address2 = wallet2.address;
-        res.status(200).send({ xdcAccountAddress: address,xdcAccountAddress2:address2 , aztecAccountAddress , aztecAccountAddress2 });
+        res.status(200).send({ xdcAccountAddress: address, xdcAccountAddress2: address2, aztecAccountAddress, aztecAccountAddress2 });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
@@ -99,7 +99,7 @@ app.get('/balance/:address', async (req, res) => {
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
 
-        res.status(200).send({ balance1: ethers.formatUnits(balance1, 18),balance2: ethers.formatUnits(balance2, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18),aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2.toString(), 18) });
+        res.status(200).send({ balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2.toString(), 18) });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
@@ -149,7 +149,7 @@ app.post('/bridge-send', async (req, res) => {
 });
 
 app.post('/xdc-transfer', async (req, res) => {
-    const { tokenAddress, to ,from , amount } = req.body;
+    const { tokenAddress, to, from, amount } = req.body;
     try {
         const tx = await bridgeTokenContract.transfer(
             tokenAddress,
@@ -158,9 +158,27 @@ app.post('/xdc-transfer', async (req, res) => {
             to
         );
         await tx.wait();
-        const balance1 = await bridgeTokenContract.balanceOf(from);
-        const balance2 = await bridgeTokenContract.balanceOf(to);
-        res.status(200).send({ message: 'Tokens received and minted successfully', balance1 , balance2});
+        const balance1 = await bridgeTokenContract.balanceOf(wallet1.address);
+        const balance2 = await bridgeTokenContract.balanceOf(wallet2.address);
+        res.status(200).send({ message: 'Tokens received and minted successfully', balance1, balance2 });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: error.message });
+    }
+});
+app.post('/aztec-transfer', async (req, res) => {
+    const { to, from, amount } = req.body;
+    try {
+        const tx = await aztecTokenContract.methods.transfer_public(
+            from,
+            to,
+            ethers.parseUnits(amount.toString(), 18),
+            0
+        );
+        await tx.wait();
+        const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
+        const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
+        res.status(200).send({ message: 'Tokens received and minted successfully', aztecAccountBalance, aztecAccountBalance2 });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });

@@ -365,8 +365,17 @@
         }
 
     }
-    const xdctoxdc = (to , from , amount) => {
-const tx = axios.post("https://localhost:3000/xdc-transfer",{to , from , amount})
+    const xdctoxdc = (to, from, amount) => {
+        const tx = axios.post("https://localhost:3000/xdc-transfer", { to, from, amount })
+        xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance1} FTH </h5>`
+        xdc2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance2} FTH </h5>`
+        showToast("Transaction Successful", true)
+    }
+    const aztectoaztec =(to , from , amount) => {
+        const tx = axios.post("https://localhost:3000/aztec-transfer", { to, from, amount })
+        aztec_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance1} FTH </h5>`
+        aztec2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance2} FTH </h5>`
+        showToast("Transaction Successful", true)
     }
     function showToast(msg, status) {
         let toast = Toastify({
