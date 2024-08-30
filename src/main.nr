@@ -20,11 +20,20 @@ contract TokenBridge {
     fn claim_public(to: AztecAddress, amount: Field) {
         Token::at(storage.token.read()).mint_public(to, amount).call(&mut context);
     }
+    #[aztec(public)]
+    fn balance_of(account: AztecAddress) {
+        Token::at(storage.token.read()).balance_of_public(account).call(&mut context)
+    }
+    #[aztec(public)]
+    fn transfer_public(from: AztecAddress, to: AztecAddress, amount: Field, nonce: Field) {
+        Token::at(storage.token.read()).transfer_public(from, to, amount, nonce).call(&mut context);
+    }
 
     #[aztec(public)]
     fn exit_to_l1_public(sender: AztecAddress, amount: Field, nonce: Field) {
         Token::at(storage.token.read()).burn_public(sender, amount, nonce).call(&mut context);
     }
+
     #[aztec(private)]
     fn claim_private(
         secret_hash_for_redeeming_minted_notes: Field,

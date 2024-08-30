@@ -149,18 +149,19 @@ app.post('/bridge-send', async (req, res) => {
 });
 
 app.post('/xdc-transfer', async (req, res) => {
-    const { tokenAddress, to, from, amount } = req.body;
+    const { to, from, amount } = req.body;
+    // console.log(tokenAddress, to, from, amount )
     try {
-        const tx = await bridgeTokenContract.transfer(
-            tokenAddress,
+        const tx = await bridgeContract.bridgeTransfer(
+            process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
             from,
+            to,
             ethers.parseUnits(amount.toString(), 18),
-            to
         );
         await tx.wait();
         const balance1 = await bridgeTokenContract.balanceOf(wallet1.address);
         const balance2 = await bridgeTokenContract.balanceOf(wallet2.address);
-        res.status(200).send({ message: 'Tokens received and minted successfully', balance1, balance2 });
+        res.status(200).send({ message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2:ethers.formatUnits(balance2, 18) });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
@@ -169,15 +170,15 @@ app.post('/xdc-transfer', async (req, res) => {
 app.post('/aztec-transfer', async (req, res) => {
     const { to, from, amount } = req.body;
     try {
-        const tx = await aztecTokenContract.methods.transfer_public(
+        const tx = await aztecBridgeTokenContract.methods.transfer_public(
             from,
             to,
             ethers.parseUnits(amount.toString(), 18),
             0
         );
         await tx.wait();
-        const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
-        const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
+        const aztecAccountBalance = await aztecBridgeTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
+        const aztecAccountBalance2 = await aztecBridgeTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
         res.status(200).send({ message: 'Tokens received and minted successfully', aztecAccountBalance, aztecAccountBalance2 });
     } catch (error) {
         console.error(error);
