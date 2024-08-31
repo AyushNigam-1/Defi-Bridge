@@ -169,17 +169,20 @@ app.post('/xdc-transfer', async (req, res) => {
 });
 app.post('/aztec-transfer', async (req, res) => {
     const { to, from, amount } = req.body;
+    // console.log(to,from , amount)
+    console.log(from , johnWallet.getAddress())
     try {
-        const tx = await aztecBridgeTokenContract.methods.transfer_public(
+        const tx = await aztecTokenContract.methods.transfer_public(
             from,
             to,
             ethers.parseUnits(amount.toString(), 18),
             0
-        );
+        ).send({ from:aliceWallet });
         await tx.wait();
-        const aztecAccountBalance = await aztecBridgeTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
-        const aztecAccountBalance2 = await aztecBridgeTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
-        res.status(200).send({ message: 'Tokens received and minted successfully', aztecAccountBalance, aztecAccountBalance2 });
+        const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
+        const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
+        console.log(aztecAccountBalance , aztecAccountBalance2)
+        res.status(200).send({ message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2:ethers.formatUnits(aztecAccountBalance2, 18)});
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
