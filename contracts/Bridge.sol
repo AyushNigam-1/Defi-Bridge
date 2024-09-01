@@ -10,12 +10,17 @@ contract Bridge is Admin {
     mapping(address => bool) public bridgeable;
     mapping(address => bool) public admins;
 
-    event TokenSent(string from, address indexed token, uint256 amount);
-    event TokenReceived(
-        address indexed to,
-        address indexed token,
-        uint256 amount
-    );
+    struct Lock {
+        address owner;
+        address token;
+        uint256 amount;
+        bool confirmed;
+    }
+
+    mapping(uint256 => Lock) public lockedTokens;
+
+    uint256 public lockId;
+
 
     constructor(address token) {
         _owner = msg.sender;
@@ -23,26 +28,56 @@ contract Bridge is Admin {
         bridgeable[token] = true;
     }
 
-    function bridgeReceive(
-        address _token,
-        uint256 _amount,
-        address _to
-    ) external {
+    modifier onlyBridgeable(address _token) {
         require(bridgeable[_token], "Token isn't bridgeable");
-        IBridgeToken token = IBridgeToken(_token);
-        token.ownerMint(_to, _amount);
-        emit TokenReceived(_to, _token, _amount);
+        _;
     }
 
-    function bridgeSend(
+    function lockTokens(
+        address _from,
         address _token,
-        uint256 _amount,
-        string memory _to
-    ) external {
-        require(bridgeable[_token], "Token isn't bridgeable");
+        uint256 _amount
+    ) external onlyBridgeable(_token) returns (uint256) {
         IBridgeToken token = IBridgeToken(_token);
-        token.ownerBurn(msg.sender, _amount);
-        emit TokenSent(_to, _token, _amount);
+        require(
+            token.transferFrom(_from, address(this), _amount),
+            "Transfer failed"
+        );
+        uint256 currentLockId = lockId;
+        lockedTokens[currentLockId] = Lock({
+            owner: _from,
+            token: _token,
+            amount: _amount,
+            confirmed: false
+        });
+        lockId++;
+        return currentLockId;
+    }
+
+    function confirmAndBurn(uint256 _lockId) external onlyAdmin {
+        Lock storage lock = lockedTokens[_lockId];
+
+        require(!lock.confirmed, "Tokens already confirmed");
+
+        lock.confirmed = true;
+        IBridgeToken token = IBridgeToken(lock.token);
+
+        require(token.ownerBurn(address(this), lock.amount), "Burn failed");
+
+    }
+
+    function revertLockedTokens(uint256 _lockId) external {
+        Lock storage lock = lockedTokens[_lockId];
+
+        require(!lock.confirmed, "Tokens already confirmed");
+
+        IBridgeToken token = IBridgeToken(lock.token);
+
+        require(
+            token.transfer(address(this), lock.owner, lock.amount),
+            "Refund failed"
+        );
+
     }
 
     function addToken(address _token) external onlyOwner {
@@ -57,7 +92,7 @@ contract Bridge is Admin {
         bridgeOn = _status;
     }
 
-    function bridgeTransfer(
+    function transfer(
         address _token,
         address from,
         address to,
@@ -65,6 +100,6 @@ contract Bridge is Admin {
     ) external {
         require(bridgeable[_token], "Token isn't bridgeable");
         IBridgeToken token = IBridgeToken(_token);
-        token.transfer(from, to, amount);
+        require(token.transfer(from, to, amount) , 'Transaction Failed');
     }
 }

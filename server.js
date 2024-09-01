@@ -127,23 +127,34 @@ app.post('/bridge-send', async (req, res) => {
     else {
         let acc = aliceWallet.getAddress().toString().includes(to) ? aliceWallet.getAddress() : johnWallet.getAddress()
         console.log(acc)
+        let lockId;
         try {
-            const xdcBurn = await bridgeContract.bridgeSend(
+            const lockTokenTx = await bridgeContract.lockTokens(
+                from,
                 process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
-                ethers.parseUnits(amount.toString(), 18),
-                to
+                ethers.parseUnits(amount.toString(), 18)
             );
-            await xdcBurn.wait()
-            const aztecMint = await aztecBridgeTokenContract.methods.claim_public(to, ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet });
-            await aztecMint.wait()
-            const balance = await bridgeTokenContract.balanceOf(from);
-            const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(to).simulate()
-            console.log(balance, aztecAccountBalance)
-            res.status(200).send({ message: 'Tokens sent successfully', balance: ethers.formatUnits(balance, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18) });
+            await lockTokenTx.wait();
+            lockId = lockTokenTx.value.toNumber();
         } catch (error) {
             console.error(error);
             res.status(500).send({ error: error.message });
         }
+        try {
+            const aztecMint = await aztecBridgeTokenContract.methods.claim_public(to, ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet });
+            await aztecMint.wait()
+            const unlockTokensAndBurn = await bridgeContract.confirmAndBurn(lockId)
+            await unlockTokensAndBurn.wait()
+        } catch (error) {
+            const revertBack = await bridgeContract.revertLockedTokens(lockId)
+            await revertBack.wait()
+            console.error(error);
+            res.status(500).send({ error: error.message });
+        }
+        const balance = await bridgeTokenContract.balanceOf(from);
+        const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(to).simulate()
+        console.log(balance, aztecAccountBalance)
+        res.status(200).send({ message: 'Tokens sent successfully', balance: ethers.formatUnits(balance, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18) });
     }
 
 });
@@ -161,7 +172,7 @@ app.post('/xdc-transfer', async (req, res) => {
         await tx.wait();
         const balance1 = await bridgeTokenContract.balanceOf(wallet1.address);
         const balance2 = await bridgeTokenContract.balanceOf(wallet2.address);
-        res.status(200).send({ message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2:ethers.formatUnits(balance2, 18) });
+        res.status(200).send({ message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18) });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
@@ -170,19 +181,19 @@ app.post('/xdc-transfer', async (req, res) => {
 app.post('/aztec-transfer', async (req, res) => {
     const { to, from, amount } = req.body;
     // console.log(to,from , amount)
-    console.log(from , johnWallet.getAddress())
+    console.log(from, johnWallet.getAddress())
     try {
         const tx = await aztecTokenContract.methods.transfer_public(
             from,
             to,
             ethers.parseUnits(amount.toString(), 18),
             0
-        ).send({ from:aliceWallet });
+        ).send({ from: aliceWallet });
         await tx.wait();
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
-        console.log(aztecAccountBalance , aztecAccountBalance2)
-        res.status(200).send({ message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2:ethers.formatUnits(aztecAccountBalance2, 18)});
+        console.log(aztecAccountBalance, aztecAccountBalance2)
+        res.status(200).send({ message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2, 18) });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });

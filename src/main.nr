@@ -1,13 +1,22 @@
 contract TokenBridge {
     use dep::aztec::prelude::{FunctionSelector, AztecAddress, EthAddress, PublicMutable, SharedImmutable};
-
     use dep::token_portal_content_hash_lib::{get_mint_public_content_hash, get_mint_private_content_hash, get_withdraw_content_hash};
-
+    use std::hash::poseidon2::Poseidon2Hasher;
+    use std::hash::BuildHasherDefault;
+    use std::collections::map::HashMap;
     use dep::token::Token;
 
     #[aztec(storage)]
-    struct Storage {
+     struct Storage {
         token: PublicMutable<AztecAddress>,
+  locks: PublicMutable<Vec<(AztecAddress, AztecAddress, Field, bool)>>,
+
+     }
+    struct Lock {
+        owner: AztecAddress,
+        token: AztecAddress,
+        amount: Field,
+        confirmed: bool,
     }
 
     #[aztec(public)]
@@ -15,7 +24,7 @@ contract TokenBridge {
     fn constructor(token: AztecAddress) {
         storage.token.write(token);
     }
- 
+
     #[aztec(public)]
     fn claim_public(to: AztecAddress, amount: Field) {
         Token::at(storage.token.read()).mint_public(to, amount).call(&mut context);
