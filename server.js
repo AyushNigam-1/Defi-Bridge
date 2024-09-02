@@ -38,13 +38,19 @@ const provider = new ethers.JsonRpcProvider(process.env.HARDHAT_NODE_URL);
 const wallet1 = new ethers.Wallet(process.env.PRIVATE_KEY_1, provider);
 const wallet2 = new ethers.Wallet(process.env.PRIVATE_KEY_2, provider);
 
-const bridgeABI = (await import('./artifacts/contracts/Bridge.sol/Bridge.json', { with: { type: 'json' } })).default;
-const bridgeTokenABI = (await import('./artifacts/contracts/BridgeToken.sol/BridgeToken.json', { with: { type: 'json' } })).default;
+const BridgeABI = (await import('./artifacts/contracts/Bridge.sol/Bridge.json', { with: { type: 'json' } })).default;
 
-const bridgeContract = new ethers.Contract(process.env.BRIDGE_CONTRACT_ADDRESS, bridgeABI.abi, wallet1);
-const bridgeTokenContract = new ethers.Contract(process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS, bridgeTokenABI.abi, wallet1);
+const TokenABI = (await import('./artifacts/contracts/Token.sol/Token.json', { with: { type: 'json' } })).default;
+
+const bridgeContract = new ethers.Contract(process.env.BRIDGE_CONTRACT_ADDRESS, BridgeABI.abi, wallet1);
+
+const tokenContract = new ethers.Contract(process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS, TokenABI.abi, wallet1);
+
 const aztecTokenContract = await TokenContract.at(AztecAddress.fromString(process.env.AZTEC_TOKEN_CONTRACT_ADDRESS), aliceWallet);
-const aztecBridgeTokenContract = await Contract.at(AztecAddress.fromString(process.env.AZTEC_BRIDGE_CONTRACT_ADDRESS), TokenBridgeContractArtifact, aliceWallet)
+
+const aztecBridgeContract = await Contract.at(AztecAddress.fromString(process.env.AZTEC_BRIDGE_CONTRACT_ADDRESS), TokenBridgeContractArtifact, aliceWallet)
+
+
 app.get('/account-address', async (req, res) => {
     try {
         const address = wallet1.address;
@@ -56,41 +62,6 @@ app.get('/account-address', async (req, res) => {
     }
 });
 
-app.post('/set-max-supply', async (req, res) => {
-    const { amount } = req.body;
-    try {
-        const tx = await bridgeTokenContract.setMaxSupply(amount);
-        await tx.wait();
-        res.status(200).send({ message: 'Max supply set successfully', transactionHash: tx.hash });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: error.message });
-    }
-});
-
-app.post('/burn-tokens', async (req, res) => {
-    const { from, amount } = req.body;
-    try {
-        const tx = await bridgeTokenContract.ownerBurn(from, ethers.parseUnits(amount, 18));
-        await tx.wait();
-        res.status(200).send({ message: 'Tokens burned successfully', transactionHash: tx.hash });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: error.message });
-    }
-});
-
-app.post('/mint-tokens', async (req, res) => {
-    const { to, amount } = req.body;
-    try {
-        const tx = await bridgeTokenContract.ownerMint(to, ethers.parseUnits(amount, 18));
-        await tx.wait();
-        res.status(200).send({ message: 'Tokens minted successfully', transactionHash: tx.hash });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: error.message });
-    }
-});
 
 app.get('/balance/:address', async (req, res) => {
     try {
@@ -141,7 +112,7 @@ app.post('/bridge-send', async (req, res) => {
             res.status(500).send({ error: error.message });
         }
         try {
-            const aztecMint = await aztecBridgeTokenContract.methods.claim_public(to, ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet });
+            const aztecMint = await aztecBridgeContract.methods.claim_public(to, ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet });
             await aztecMint.wait()
             const unlockTokensAndBurn = await bridgeContract.confirmAndBurn(lockId)
             await unlockTokensAndBurn.wait()
@@ -181,7 +152,6 @@ app.post('/xdc-transfer', async (req, res) => {
 app.post('/aztec-transfer', async (req, res) => {
     const { to, from, amount } = req.body;
     // console.log(to,from , amount)
-    console.log(from, johnWallet.getAddress())
     try {
         const tx = await aztecTokenContract.methods.transfer_public(
             from,

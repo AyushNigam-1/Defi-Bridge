@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 import "./extension/Admin.sol";
 
-contract BridgeToken is Admin {
+contract Token is Admin {
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint)) _allowed;
