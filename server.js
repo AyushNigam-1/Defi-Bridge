@@ -65,8 +65,8 @@ app.get('/account-address', async (req, res) => {
 
 app.get('/balance/:address', async (req, res) => {
     try {
-        const balance1 = await bridgeTokenContract.balanceOf(wallet1.address);
-        const balance2 = await bridgeTokenContract.balanceOf(wallet2.address);
+        const balance1 = await bridgeContract.balance(wallet1.address);
+        const balance2 = await bridgeContract.balance(wallet2.address);
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
 
@@ -81,14 +81,21 @@ app.post('/bridge-send', async (req, res) => {
     const { amount, to, token, from } = req.body;
     if (token == 'WFTH') {
         try {
-            const aztecBurn = await aztecTokenContract.methods.burn_public(aliceWallet.getAddress(), ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet })
+            const aztecBurn = await aztecBridgeContract.methods.exit_to_l1_public(aliceWallet.getAddress(), ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet })
             await aztecBurn.wait()
-            const xdcMint = await bridgeContract.bridgeReceive(process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
-                ethers.parseUnits(amount.toString(), 18),
-                to)
-            await xdcMint.wait();
+            const fromBlock = await pxe.getBlockNumber();
+            const logFilter = {
+              fromBlock,
+              toBlock: fromBlock + 1,
+            };
+            const unencryptedLogs = (await pxe.getUnencryptedLogs(logFilter)).logs;
+            console.log(unencryptedLogs)
+            // const xdcMint = await bridgeContract.bridgeReceive(process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
+            //     ethers.parseUnits(amount.toString(), 18),
+            //     to)
+            // await xdcMint.wait();
             const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(from).simulate()
-            const balance = await bridgeTokenContract.balanceOf(to);
+            const balance = await bridgeContract.balance(to);
             res.status(200).send({ message: 'Tokens sent successfully', balance: ethers.formatUnits(balance, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18) });
         } catch (error) {
             console.error(" this -->", error);
@@ -96,36 +103,41 @@ app.post('/bridge-send', async (req, res) => {
         }
     }
     else {
-        let acc = aliceWallet.getAddress().toString().includes(to) ? aliceWallet.getAddress() : johnWallet.getAddress()
-        console.log(acc)
-        let lockId;
+        let reciever = aliceWallet.getAddress().toString().includes(to) ? aliceWallet.getAddress().toString() : johnWallet.getAddress().toString()
         try {
-            const lockTokenTx = await bridgeContract.lockTokens(
-                from,
-                process.env.BRIDGE_TOKEN_CONTRACT_ADDRESS,
+            const burnToken = await bridgeContract.burn(
+                reciever,
                 ethers.parseUnits(amount.toString(), 18)
             );
-            await lockTokenTx.wait();
-            lockId = lockTokenTx.value.toNumber();
+            await burnToken.wait();
         } catch (error) {
             console.error(error);
             res.status(500).send({ error: error.message });
         }
-        try {
-            const aztecMint = await aztecBridgeContract.methods.claim_public(to, ethers.parseUnits(amount.toString(), 18), 0).send({ from: aliceWallet });
-            await aztecMint.wait()
-            const unlockTokensAndBurn = await bridgeContract.confirmAndBurn(lockId)
-            await unlockTokensAndBurn.wait()
-        } catch (error) {
-            const revertBack = await bridgeContract.revertLockedTokens(lockId)
-            await revertBack.wait()
-            console.error(error);
-            res.status(500).send({ error: error.message });
-        }
-        const balance = await bridgeTokenContract.balanceOf(from);
-        const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(to).simulate()
-        console.log(balance, aztecAccountBalance)
-        res.status(200).send({ message: 'Tokens sent successfully', balance: ethers.formatUnits(balance, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18) });
+        await new Promise((resolve, reject) => {
+            bridgeContract.once('onBurn', async (from, to, amount, date) => {
+                console.log(from, to, amount, date);
+                try {
+                    const aztecMint = await aztecBridgeContract.methods.claim_public(
+                        to,
+                        ethers.parseUnits(amount.toString(), 18),
+                        0
+                    ).send({ from: aliceWallet });
+                    await aztecMint.wait();
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+        const balance = await bridgeContract.balance(from);
+        const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(to).simulate();
+        console.log(balance, aztecAccountBalance);
+        res.status(200).send({
+            message: 'Tokens sent successfully',
+            balance: ethers.formatUnits(balance, 18),
+            aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18)
+        });
     }
 
 });

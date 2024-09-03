@@ -9,50 +9,23 @@ contract Bridge is Admin {
     IToken token;
     mapping(address => bool) public bridgeable;
     mapping(address => bool) public admins;
-    enum Step {
-        Burn,
-        Mint
-    }
-    event Transaction(
-        address from,
-        address to,
-        uint amount,
-        uint date,
-        Step indexed step
-    );
+    event onBurn(address from, string to, uint amount, uint date);
+    event onMint(address from, address to, uint amount, uint date);
 
     constructor(address _token) {
         _owner = msg.sender;
         token = IToken(_token);
         admin[msg.sender] = true;
-        bridgeable[_token] = true;
     }
 
-    modifier onlyBridgeable(address _token) {
-        require(bridgeable[_token], "Token isn't bridgeable");
-        _;
-    }
-
-    function addToken(address _token) external onlyOwner {
-        bridgeable[_token] = true;
-    }
-
-    function removeToken(address _token) external onlyOwner {
-        bridgeable[_token] = false;
-    }
-
-    function bridgeStatus(bool _status) external onlyOwner {
-        bridgeOn = _status;
-    }
-
-    function burn(address to, uint amount) external {
+    function burn(string calldata to, uint amount) external {
         token.ownerBurn(msg.sender, amount);
-        emit Transaction(msg.sender, to, amount, block.timestamp, Step.Burn);
+        emit onBurn(msg.sender, to, amount, block.timestamp);
     }
 
     function mint(address to, uint amount) external {
         token.ownerMint(to, amount);
-        emit Transaction(msg.sender, to, amount, block.timestamp, Step.Mint);
+        emit onMint(msg.sender, to, amount, block.timestamp);
     }
 
     function balance(address account) external view returns (uint256) {

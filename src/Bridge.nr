@@ -3,7 +3,6 @@ contract Bridge {
     use dep::token_portal_content_hash_lib::{get_mint_public_content_hash, get_mint_private_content_hash, get_withdraw_content_hash};
     use dep::token::Token;
 
-
     #[aztec(storage)]
      struct Storage {
         token: PublicMutable<AztecAddress>,
@@ -45,7 +44,6 @@ fn claim_private(
         amount: Field,
         secret_for_L1_to_L2_message_consumption: Field
     ) {
-        // Call the mint function on the token
         Bridge::at(context.this_address())._call_mint_on_token(amount, secret_hash_for_redeeming_minted_notes).enqueue(&mut context);
     }
 
@@ -57,7 +55,6 @@ fn exit_to_l1_private(
         caller_on_l1: EthAddress,
         nonce: Field
     ) {
-        Bridge::at(context.this_address())._assert_token_is_same(token).enqueue(&mut context);
         Token::at(token).burn(context.msg_sender(), amount, nonce).call(&mut context);
     }
 

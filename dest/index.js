@@ -16,13 +16,13 @@ async function main() {
     logger.info(`Deploying token contract...`);
     // Deploy the contract and set Alice as the admin while doing so
     const tokenContract = await TokenContract.deploy(adminWallet, admin, 'FATHOM', 'FTH', 18).send().deployed();
-    logger.info(`Token Contract successfully deployed at address ${tokenContract.address.toShortString()}`);
     console.log(`Token Contract successfully deployed at address ${tokenContract.address.toShortString()}`)
     const bridgeContract = await TokenBridgeContract.deploy(adminWallet, tokenContract.address).send().deployed();
-    logger.info(`Token Bridge Contract successfully deployed at address ${bridgeContract.address.toShortString()}`);
     console.log(`Token Bridge Contract successfully deployed at address ${bridgeContract.address.toShortString()}`)
     await tokenContract.methods.set_minter(bridgeContract.address,true).send({from:adminWallet})
     await tokenContract.methods.set_admin(bridgeContract.address,true).send({from:adminWallet})
+    await tokenContract.methods.set_minter(adminWallet.getAddress(),true).send({from:adminWallet})
+
     console.log(`Token Bridge Minter Set`);
 }
 main();
