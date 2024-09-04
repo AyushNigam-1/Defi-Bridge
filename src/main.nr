@@ -1,4 +1,4 @@
-contract Bridge {
+contract TokenBridge {
     use dep::aztec::prelude::{FunctionSelector, AztecAddress, EthAddress, PublicMutable, SharedImmutable};
     use dep::token_portal_content_hash_lib::{get_mint_public_content_hash, get_mint_private_content_hash, get_withdraw_content_hash};
     use dep::token::Token;
@@ -44,7 +44,7 @@ fn claim_private(
         amount: Field,
         secret_for_L1_to_L2_message_consumption: Field
     ) {
-        Bridge::at(context.this_address())._call_mint_on_token(amount, secret_hash_for_redeeming_minted_notes).enqueue(&mut context);
+        TokenBridge::at(context.this_address())._call_mint_on_token(amount, secret_hash_for_redeeming_minted_notes).enqueue(&mut context);
     }
 
     #[aztec(private)]
@@ -58,11 +58,6 @@ fn exit_to_l1_private(
         Token::at(token).burn(context.msg_sender(), amount, nonce).call(&mut context);
     }
 
-    #[aztec(public)]
-    #[aztec(view)]
-    fn get_token() -> AztecAddress {
-        storage.token.read()
-    }
 
     #[aztec(public)]
     #[aztec(internal)]

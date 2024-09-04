@@ -214,12 +214,6 @@
                         href="#" onclick="xdctoxdc(event , xdcAcc,xdcAcc2 , xdc2Amount.value ,xdc2Amount )">
                         Send to XDC Account
                     </button>
-                    <button onclick="fromXDCToAztec(event,xdc2_acc.innerText,2, xdc2Amount.value)"
-                        class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
-                        href="#">
-
-                        Send to Aztec Account
-                    </button>
                 </div>
             </div>
             <div>
@@ -277,11 +271,6 @@
                 </div>
                 <div class="flex gap-3">
                     <button
-                        class="inline-block text-center rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
-                        href="#" onclick="fromAztecToXDC(event)">
-                        Send to XDC Account
-                    </button>
-                    <button
                         class="inline-block rounded px-12 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
                         href="#"
                         onclick="aztectoaztec(event, aztecAcc , aztecAcc2 , aztecAmount2.value , aztecAmount2)">
@@ -306,7 +295,7 @@
             xdcAcc = account.data.xdcAccountAddress
             xdcAcc2 = account.data.xdcAccountAddress2
             xdc_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc}</h5> `
-            xdc2_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc2}</h5> <`
+            xdc2_acc.innerHTML = `<h5 class="text-xl font-semibold" >${xdcAcc2}</h5> `
             aztec_acc.innerHTML = `<p class="text-xl font-semibold" >${aztecAcc.substring(0, 42) + "..."}</p> `
             aztec2_acc.innerHTML = `<p class="text-xl font-semibold" >${aztecAcc2.substring(0, 42) + "..."}</p> `
         } catch (error) {
@@ -399,7 +388,7 @@
         try {
             const tx = await axios.post("http://localhost:3000/aztec-transfer", { to, from, amount })
             aztec_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} FTH </h5>`
-            aztec2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountAddress2} FTH </h5>`
+            aztec2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance2} FTH </h5>`
             showToast("Transaction Successful", true)
         } catch (error) {
             console.log(error)

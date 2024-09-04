@@ -34,21 +34,35 @@ import TokenBridgeContractArtifactJson from '../../target/token_contract-TokenBr
 export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContractArtifactJson as NoirCompiledContract);
 
 
+export type TokenBurned = {
+  from: Fr
+  amount: Fr
+  is_private: Fr
+  nonce: Fr
+}
+
+
+export type TokenMinted = {
+  to: Fr
+  amount: Fr
+  is_private: Fr
+}
+
 
 /**
  * Type-safe interface for contract TokenBridge;
  */
 export class TokenBridgeContract extends ContractBase {
-  
+
   private constructor(
     instance: ContractInstanceWithAddress,
     wallet: Wallet,
   ) {
     super(instance, TokenBridgeContractArtifact, wallet);
   }
-  
 
-  
+
+
   /**
    * Creates a contract instance.
    * @param address - The deployed contract's address.
@@ -62,7 +76,7 @@ export class TokenBridgeContract extends ContractBase {
     return Contract.at(address, TokenBridgeContract.artifact, wallet) as Promise<TokenBridgeContract>;
   }
 
-  
+
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
@@ -93,73 +107,64 @@ export class TokenBridgeContract extends ContractBase {
       opts.method ?? 'constructor',
     );
   }
-  
 
-  
+
+
   /**
    * Returns this contract's artifact.
    */
   public static get artifact(): ContractArtifact {
     return TokenBridgeContractArtifact;
   }
-  
+
 
   public static get storage(): ContractStorageLayout<'admin' | 'minters' | 'balances' | 'total_supply' | 'pending_shields' | 'public_balances' | 'symbol' | 'name' | 'decimals'> {
-      return {
-        admin: {
-      slot: new Fr(1n),
-    },
-minters: {
-      slot: new Fr(2n),
-    },
-balances: {
-      slot: new Fr(3n),
-    },
-total_supply: {
-      slot: new Fr(4n),
-    },
-pending_shields: {
-      slot: new Fr(5n),
-    },
-public_balances: {
-      slot: new Fr(6n),
-    },
-symbol: {
-      slot: new Fr(7n),
-    },
-name: {
-      slot: new Fr(8n),
-    },
-decimals: {
-      slot: new Fr(9n),
-    }
-      } as ContractStorageLayout<'admin' | 'minters' | 'balances' | 'total_supply' | 'pending_shields' | 'public_balances' | 'symbol' | 'name' | 'decimals'>;
-    }
-    
+    return {
+      admin: {
+        slot: new Fr(1n),
+      },
+      minters: {
+        slot: new Fr(2n),
+      },
+      balances: {
+        slot: new Fr(3n),
+      },
+      total_supply: {
+        slot: new Fr(4n),
+      },
+      pending_shields: {
+        slot: new Fr(5n),
+      },
+      public_balances: {
+        slot: new Fr(6n),
+      },
+      symbol: {
+        slot: new Fr(7n),
+      },
+      name: {
+        slot: new Fr(8n),
+      },
+      decimals: {
+        slot: new Fr(9n),
+      }
+    } as ContractStorageLayout<'admin' | 'minters' | 'balances' | 'total_supply' | 'pending_shields' | 'public_balances' | 'symbol' | 'name' | 'decimals'>;
+  }
+
 
   public static get notes(): ContractNotes<'TransparentNote' | 'TokenNote'> {
     return {
       TransparentNote: {
-          id: new NoteSelector(1049878767),
-        },
-TokenNote: {
-          id: new NoteSelector(3992089675),
-        }
+        id: new NoteSelector(1049878767),
+      },
+      TokenNote: {
+        id: new NoteSelector(3992089675),
+      }
     } as ContractNotes<'TransparentNote' | 'TokenNote'>;
   }
-  
+
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public override methods!: {
-    
-    /** get_token() */
-    get_token: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
-
-    /** exit_to_l1_public(sender: struct, amount: field, nonce: field) */
-    exit_to_l1_public: ((sender: AztecAddressLike, amount: FieldLike, nonce: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
-
-    /** compute_note_hash_and_optionally_a_nullifier(contract_address: struct, nonce: field, storage_slot: field, note_type_id: field, compute_nullifier: boolean, serialized_note: array) */
-    compute_note_hash_and_optionally_a_nullifier: ((contract_address: AztecAddressLike, nonce: FieldLike, storage_slot: FieldLike, note_type_id: FieldLike, compute_nullifier: boolean, serialized_note: FieldLike[]) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** claim_public(to: struct, amount: field) */
     claim_public: ((to: AztecAddressLike, amount: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
@@ -170,12 +175,55 @@ TokenNote: {
     /** constructor(token: struct) */
     constructor: ((token: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** transfer_public(from: struct, to: struct, amount: field, nonce: field) */
-    transfer_public: ((from: AztecAddressLike, to: AztecAddressLike, amount: FieldLike, nonce: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** exit_to_l1_public(sender: struct, amount: field, nonce: field) */
+    exit_to_l1_public: ((sender: AztecAddressLike, amount: FieldLike, nonce: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+
+    /** compute_note_hash_and_optionally_a_nullifier(contract_address: struct, nonce: field, storage_slot: field, note_type_id: field, compute_nullifier: boolean, serialized_note: array) */
+    compute_note_hash_and_optionally_a_nullifier: ((contract_address: AztecAddressLike, nonce: FieldLike, storage_slot: FieldLike, note_type_id: FieldLike, compute_nullifier: boolean, serialized_note: FieldLike[]) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** exit_to_l1_private(token: struct, recipient: struct, amount: field, caller_on_l1: struct, nonce: field) */
     exit_to_l1_private: ((token: AztecAddressLike, recipient: EthAddressLike, amount: FieldLike, caller_on_l1: EthAddressLike, nonce: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
   };
 
-  
+
+  // Partial application is chosen is to avoid the duplication of so much codegen.
+  private static decodeEvent<T>(fieldsLength: number, eventSelector: EventSelector, fields: string[]): (payload: L1EventPayload | undefined) => T | undefined {
+    return (payload: L1EventPayload | undefined): T | undefined => {
+      if (payload === undefined) {
+        return undefined;
+      }
+      if (!eventSelector.equals(payload.eventTypeId)) {
+        return undefined;
+      }
+      if (payload.event.items.length !== fieldsLength) {
+        throw new Error(
+          'Something is weird here, we have matching EventSelectors, but the actual payload has mismatched length',
+        );
+      }
+
+      return fields.reduce(
+        (acc, curr, i) => ({
+          ...acc,
+          [curr]: payload.event.items[i],
+        }),
+        {} as T,
+      );
+    };
+  }
+
+  public static get events(): { TokenBurned: { decode: (payload: L1EventPayload | undefined) => TokenBurned | undefined, eventSelector: EventSelector, fieldNames: string[] }, TokenMinted: { decode: (payload: L1EventPayload | undefined) => TokenMinted | undefined, eventSelector: EventSelector, fieldNames: string[] } } {
+    return {
+      TokenBurned: {
+        decode: this.decodeEvent(4, EventSelector.fromSignature('TokenBurned(Field,Field,Field,Field)'), ["from", "amount", "is_private", "nonce"]),
+        eventSelector: EventSelector.fromSignature('TokenBurned(Field,Field,Field,Field)'),
+        fieldNames: ["from", "amount", "is_private", "nonce"],
+      },
+      TokenMinted: {
+        decode: this.decodeEvent(3, EventSelector.fromSignature('TokenMinted(Field,Field,Field)'), ["to", "amount", "is_private"]),
+        eventSelector: EventSelector.fromSignature('TokenMinted(Field,Field,Field)'),
+        fieldNames: ["to", "amount", "is_private"],
+      }
+    };
+  }
+
 }

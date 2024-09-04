@@ -1,6 +1,10 @@
 {
   "token_contract-TokenBridge.json": {
     "contractName": "TokenBridge",
-    "hash": "4c62341180b264781d778565b623630b217ce95a26ee296f48cd8b6da1ac5acb"
+    "hash": "cf36ca4886c19ce20cd34740b33a42cd11810c8a7f4c3fcc0284d41fc875ca07"
+  },
+  "token_contract-Bridge.json": {
+    "contractName": "Bridge",
+    "hash": "5e5ea2db65b2ef9401ad8a37b35e4472d8558b7b64356b58460f2fadfbdf72e5"
   }
 }
