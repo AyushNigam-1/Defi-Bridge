@@ -335,6 +335,16 @@
         }
 
     }
+    function formatTime(milliseconds) {
+        const ms = milliseconds % 1000;
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const seconds = totalSeconds % 60;
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const minutes = totalMinutes % 60;
+        const hours = Math.floor(totalMinutes / 60);
+
+        return `${hours}h ${minutes}m ${seconds}s ${ms}ms`;
+    }
     const fromAztecToXDC = async (event) => {
         let title = event.target.innerText
         event.target.innerHTML = `<svg width="20" height="20" fill="currentColor" class=" mx-auto animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
@@ -389,6 +399,7 @@
             const tx = await axios.post("http://localhost:3000/aztec-transfer", { to, from, amount })
             aztec_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} FTH </h5>`
             aztec2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance2} FTH </h5>`
+            console.log(formatTime(tx.data.timeTaken))
             showToast("Transaction Successful", true)
         } catch (error) {
             console.log(error)
