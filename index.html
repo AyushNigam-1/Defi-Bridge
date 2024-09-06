@@ -9,6 +9,7 @@
         integrity="sha512-6VJrgykcg/InSIutW2biLwA1Wyq+7bZmMivHw19fI+ycW0jIjsadm8wKQQLlfv3YUS4owfMDlZU38NtaAK6fSg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Include Toastify CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.js"
         integrity="sha512-ZHzbWDQKpcZxIT9l5KhcnwQTidZFzwK/c7gpUUsFvGjEsxPusdUCyFxjjpc7e/Wj7vLhfMujNx7COwOmzbn+2w=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -280,6 +281,9 @@
             </div>
         </div>
     </span>
+    <div>
+        <canvas id="myChart"></canvas>
+      </div>
 </body>
 <script>
     let aztecAcc
@@ -289,7 +293,7 @@
     (async () => {
         let account
         try {
-            account = await axios.get("http://localhost:3000/account-address")
+            account = await axios.get("http://localhost:3001/account-address")
             aztecAcc = account.data.aztecAccountAddress.value
             aztecAcc2 = account.data.aztecAccountAddress2.value
             xdcAcc = account.data.xdcAccountAddress
@@ -302,7 +306,7 @@
             showToast("Something went wrong!", false)
         }
         try {
-            const balance = await axios.get(`http://localhost:3000/balance/${xdcAcc}`)
+            const balance = await axios.get(`http://localhost:3001/balance/${xdcAcc}`)
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${balance.data.balance1} FTH </h5>`
             xdc2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${balance.data.balance2} FTH </h5>`
 
@@ -322,7 +326,7 @@
         </path>
     </svg>`
         try {
-            const tx = await axios.post("http://localhost:3000/bridge-send", { amount, to: eval(`aztecAcc${to}`), token: "FTH", from })
+            const tx = await axios.post("http://localhost:3001/bridge-send", { amount, to: eval(`aztecAcc${to}`), token: "FTH", from })
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance} FTH </h5>`
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} WFTH </h5>`
             showToast("Transaction Completed", true)
@@ -352,7 +356,7 @@
         </path>
     </svg>`
         try {
-            const tx = await axios.post("http://localhost:3000/bridge-send", { amount: aztecAmount.value, to: xdcAcc, token: "WFTH", from: aztecAcc })
+            const tx = await axios.post("http://localhost:3001/bridge-send", { amount: aztecAmount.value, to: xdcAcc, token: "WFTH", from: aztecAcc })
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance} FTH </h5>`
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} WFTH </h5>`
             showToast("Transaction Completed", true)
@@ -373,7 +377,7 @@
         </path>
     </svg>`
         try {
-            const tx = await axios.post("http://localhost:3000/xdc-transfer", { to, from, amount })
+            const tx = await axios.post("http://localhost:3001/xdc-transfer", { to, from, amount })
             console.log(tx)
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance1} FTH </h5>`
             xdc2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.balance2} FTH </h5>`
@@ -396,10 +400,10 @@
         </path>
     </svg>`
         try {
-            const tx = await axios.post("http://localhost:3000/aztec-transfer", { to, from, amount })
+            const tx = await axios.post("http://localhost:3001/aztec-transfer", { to, from, amount })
             aztec_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance} FTH </h5>`
             aztec2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${tx.data.aztecAccountBalance2} FTH </h5>`
-            console.log(formatTime(tx.data.timeTaken))
+            console.log(tx.data)
             showToast("Transaction Successful", true)
         } catch (error) {
             console.log(error)
@@ -413,7 +417,7 @@
     function showToast(msg, status) {
         let toast = Toastify({
             text: msg,
-            duration: 3000,
+            duration: 3001,
             gravity: "top",
             position: "center",
             backgroundColor: status ? "#4CAF50" : "rgb(255, 102, 102)",
@@ -421,6 +425,26 @@
         });
         toast.showToast();
     }
+    const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    datasets: [{
+      label: '# of Votes',
+      data: [12, 19, 3, 5, 2, 3],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
 </script>
 
 </html>
