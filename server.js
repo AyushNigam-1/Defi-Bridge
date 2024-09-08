@@ -1,8 +1,7 @@
 import 'dotenv/config'; // Use import for dotenv in ES modules
 import express from 'express';
 import cors from 'cors';
-import { ethers, toBigInt } from 'ethers';
-import { getSchnorrAccount } from '@aztec/accounts/schnorr';
+import { ethers } from 'ethers';
 import { getDeployedTestAccountsWallets } from '@aztec/accounts/testing';
 import {
     AztecAddress,
@@ -12,10 +11,8 @@ import {
     loadContractArtifact,
     Fr
 } from '@aztec/aztec.js';
-import crypto from "crypto"
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import TokenBridgeContractArtifactJson from './target/token_contract-TokenBridge.json' with { type: 'json' };
-import { get } from 'http';
 export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContractArtifactJson);
 const app = express();
 app.use(cors());
@@ -27,7 +24,6 @@ const pxe = createPXEClient(PXE_URL);
 
 await waitForPXE(pxe);
 
-const nodeInfo = await pxe.getNodeInfo();
 const accounts = await getDeployedTestAccountsWallets(pxe);
 
 const aliceWallet = accounts[0];
@@ -52,7 +48,6 @@ const aztecTokenContract = await TokenContract.at(AztecAddress.fromString(proces
 const aztecBridgeContract = await Contract.at(AztecAddress.fromString(process.env.AZTEC_BRIDGE_CONTRACT_ADDRESS), TokenBridgeContractArtifact, aliceWallet)
 
 function serializeFr(fr) {
-    // Ensure `fr` is handled as a string or buffer
     if (typeof fr.toString === 'function') {
         return Buffer.from(fr.toString('hex'), 'hex');
     } else {
@@ -61,7 +56,6 @@ function serializeFr(fr) {
 }
 
 function serializeBuffer(buffer) {
-    // console.log(buffer)
     if (Buffer.isBuffer(buffer)) {
         return buffer;
     } else if (Array.isArray(buffer)) {
