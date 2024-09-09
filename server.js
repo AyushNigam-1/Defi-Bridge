@@ -31,7 +31,7 @@ const johnWallet = accounts[1];
 const aztecAccountAddress = aliceWallet.getAddress();
 const aztecAccountAddress2 = johnWallet.getAddress();
 
-const provider = new ethers.JsonRpcProvider(process.env.HARDHAT_NODE_URL);
+const provider = new ethers.JsonRpcProvider(process.env.XDC_RPC_URL);
 const wallet1 = new ethers.Wallet(process.env.PRIVATE_KEY_1, provider);
 const wallet2 = new ethers.Wallet(process.env.PRIVATE_KEY_2, provider);
 
