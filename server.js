@@ -106,7 +106,16 @@ function getSerializedBlockSize(block) {
     return size;
 }
 
+function estimateBlockSize(gasUsed, extraDataHex) {
+    const BYTES_PER_GAS_UNIT = 16n;
+    const BLOCK_HEADER_SIZE = 500n;
 
+    const transactionDataSize = gasUsed / BYTES_PER_GAS_UNIT;
+    const extraDataSize = BigInt(extraDataHex.length / 2);
+    const totalBlockSize = BLOCK_HEADER_SIZE + transactionDataSize + extraDataSize;
+
+    return totalBlockSize;
+}
 
 
 app.get('/accounts', async (req, res) => {
@@ -118,7 +127,7 @@ app.get('/accounts', async (req, res) => {
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
 
-        res.status(200).send({ balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2.toString(), 18) , xdcAccountAddress: address, xdcAccountAddress2: address2, aztecAccountAddress, aztecAccountAddress2 });
+        res.status(200).send({ balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2.toString(), 18), xdcAccountAddress: address, xdcAccountAddress2: address2, aztecAccountAddress, aztecAccountAddress2 });
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: error.message });
@@ -142,6 +151,7 @@ app.get('/balance/:address', async (req, res) => {
 
 app.post('/bridge-send', async (req, res) => {
     const { amount, to, token, from } = req.body;
+    console.log(from, amount, token, to)
 
     if (token == 'WFTH') {
         const startTime = performance.now()
@@ -165,7 +175,6 @@ app.post('/bridge-send', async (req, res) => {
         }
     }
     else {
-        const startTime = performance.now()
         let reciever = aliceWallet.getAddress().toString().includes(to) ? aliceWallet.getAddress().toString() : johnWallet.getAddress().toString()
         try {
             const burnToken = await bridgeContract.burn(
@@ -173,36 +182,30 @@ app.post('/bridge-send', async (req, res) => {
                 ethers.parseUnits(amount.toString(), 18)
             );
             await burnToken.wait();
+        } catch (error) {   
+            console.error(error);
+            res.status(500).send({ error: error.message });
+        }
+        try {
+            const aztecMint = await aztecBridgeContract.methods.claim_public(
+                to,
+                ethers.parseUnits(amount.toString(), 18),
+                0
+            ).send({ from: aliceWallet });
+            await aztecMint.wait();
+
         } catch (error) {
             console.error(error);
             res.status(500).send({ error: error.message });
         }
-        await new Promise((resolve, reject) => {
-            bridgeContract.once('onBurn', async (from, to, amount, date) => {
-                console.log(from, to, amount, date);
-                try {
-                    const aztecMint = await aztecBridgeContract.methods.claim_public(
-                        to,
-                        amount,
-                        0
-                    ).send({ from: aliceWallet });
-                    await aztecMint.wait();
-                    resolve();
-                } catch (error) {
-                    reject(error);
-                }
-            });
-        });
-        const balance = await bridgeContract.balance(from);
+        const balance = await tokenContract.balanceOf(from);
+        console.log("balance", balance)
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(to).simulate();
-        const endTime = performance.now()
-        const timeTaken = endTime - startTime;
         console.log(balance, aztecAccountBalance);
         res.status(200).send({
             message: 'Tokens sent successfully',
             balance: ethers.formatUnits(balance, 18),
             aztecAccountBalance: ethers.formatUnits(aztecAccountBalance.toString(), 18),
-            timeTaken
         });
     }
 });
@@ -217,21 +220,20 @@ app.post('/xdc-transfer', async (req, res) => {
             ethers.parseUnits(amount.toString(), 18),
         );
         const receipt = await tx.wait();
-        const block = await provider.send('eth_getBlockByNumber', [ethers.toBeHex(receipt.blockNumber), false]);
-        const gasUsed = BigInt(21000);
-        const gasPrice = BigInt(20000000000);
+        const block = await provider.getBlock(receipt.blockNumber);
+        const gasUsed = BigInt(block.gasUsed);
+        const gasPrice = BigInt(tx.gasPrice);
         const transactionFee = gasUsed * gasPrice;
         const transactionFeeInEther = ethers.formatUnits(transactionFee, "ether");
-        console.log(parseInt(block.size, 16))
-        const blockSize = parseInt(block.size, 16)
+        const blockSize = estimateBlockSize(gasUsed, block.extraData).toString()
         const balance1 = await tokenContract.balanceOf(wallet1.address);
         const balance2 = await tokenContract.balanceOf(wallet2.address);
         const endTime = performance.now()
         const timeTaken = endTime - startTime;
         res.status(200).send({
-            message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), timeTaken: timeTaken/1000,
+            message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), timeTaken: timeTaken / 1000,
             transactionFee: transactionFeeInEther,
-            blockSize: blockSize.toFixed(2)
+            blockSize: blockSize
         });
     } catch (error) {
         console.error(error);
@@ -251,7 +253,6 @@ app.post('/aztec-transfer', async (req, res) => {
             0
         ).send();
         const receipt = await tx.wait();
-        console.log(receipt)
         const block = await client.getBlock(receipt.blockNumber)
         const blockSize = getSerializedBlockSize(block)
         const { transactionFee } = receipt;
@@ -262,7 +263,7 @@ app.post('/aztec-transfer', async (req, res) => {
         const timeTaken = endTime - startTime;
 
         res.status(200).send({
-            message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2, 18), timeTaken: timeTaken/1000,
+            message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2, 18), timeTaken: timeTaken / 1000,
             transactionFee: transactionFeeInEther, blockSize: blockSize.toFixed(2)
         });
     } catch (error) {

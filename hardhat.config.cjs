@@ -10,7 +10,7 @@ module.exports = {
     },
     apothem: {
       url: "https://rpc.apothem.network", // XDC Apothem testnet RPC URL
-      accounts: [process.env.PRIVATE_KEY_1], // Use your private key securely from .env
+      accounts: ["fed209a85a3939305e153c6b3a43df371cc82519273ceeadba976c94a8b6c181"], // Use your private key securely from .env
       chainId: 51, // XDC Apothem testnet chain ID
     },
   },

@@ -103,7 +103,7 @@
                     href="#" onclick="xdctoxdc(event , xdcAcc2 , xdcAcc , xdcAmount.value , xdcAmount)">
                     Send to XDC Acc
                 </button>
-                <button onclick="fromXDCToAztec(event,xdc_acc.innerText,'', xdcAmount.value)"
+                <button onclick="fromXDCToAztec(event,xdcAcc,'', xdcAmount.value)"
                     class="inline-block rounded px-6 py-3 text-md font-medium text-indigo-600 bg-indigo-600 text-white text-nowrap w-full"
                     href="#">
                     Send to Aztec Acc
@@ -222,7 +222,7 @@
 <script>
     let aztecAcc
     let aztecAcc2
-    let xdcAccz
+    let xdcAcc
     let xdcAcc2
 
     (async () => {
