@@ -13,6 +13,7 @@ import {
 } from '@aztec/aztec.js';
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import TokenBridgeContractArtifactJson from './target/token_contract-TokenBridge.json' with { type: 'json' };
+import axios from 'axios';
 export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContractArtifactJson);
 const app = express();
 app.use(cors());
@@ -182,7 +183,7 @@ app.post('/bridge-send', async (req, res) => {
                 ethers.parseUnits(amount.toString(), 18)
             );
             await burnToken.wait();
-        } catch (error) {   
+        } catch (error) {
             console.error(error);
             res.status(500).send({ error: error.message });
         }
@@ -224,7 +225,11 @@ app.post('/xdc-transfer', async (req, res) => {
         const gasUsed = BigInt(block.gasUsed);
         const gasPrice = BigInt(tx.gasPrice);
         const transactionFee = gasUsed * gasPrice;
-        const transactionFeeInEther = ethers.formatUnits(transactionFee, "ether");
+        const exchangeRates =await axios("https://api.coingecko.com/api/v3/simple/price?ids=xdce-crowd-sale&vs_currencies=usd")
+        const xdcToUsdRate = exchangeRates.data['xdce-crowd-sale'].usd
+        const transactionFeeInXDCNumber = Number(transactionFee);
+        const transactionFeeInUSD = (transactionFeeInXDCNumber / 1e18) * xdcToUsdRate;
+        console.log(transactionFeeInUSD)
         const blockSize = estimateBlockSize(gasUsed, block.extraData).toString()
         const balance1 = await tokenContract.balanceOf(wallet1.address);
         const balance2 = await tokenContract.balanceOf(wallet2.address);
@@ -232,7 +237,7 @@ app.post('/xdc-transfer', async (req, res) => {
         const timeTaken = endTime - startTime;
         res.status(200).send({
             message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), timeTaken: timeTaken / 1000,
-            transactionFee: transactionFeeInEther,
+            transactionFee: transactionFeeInUSD,
             blockSize: blockSize
         });
     } catch (error) {
@@ -256,7 +261,11 @@ app.post('/aztec-transfer', async (req, res) => {
         const block = await client.getBlock(receipt.blockNumber)
         const blockSize = getSerializedBlockSize(block)
         const { transactionFee } = receipt;
-        const transactionFeeInEther = ethers.formatUnits(BigInt(transactionFee), "ether")
+        const exchangeRates = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
+        const ethToUsdRate = exchangeRates.data.ethereum.usd;
+        const transactionFeeInXDCNumber = Number(transactionFee);
+        const transactionFeeInUSD = (transactionFeeInXDCNumber / 1e18) * ethToUsdRate;
+        console.log(transactionFeeInUSD)
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
         const endTime = performance.now()
@@ -264,7 +273,7 @@ app.post('/aztec-transfer', async (req, res) => {
 
         res.status(200).send({
             message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2, 18), timeTaken: timeTaken / 1000,
-            transactionFee: transactionFeeInEther, blockSize: blockSize.toFixed(2)
+            transactionFee: transactionFeeInUSD, blockSize: blockSize.toFixed(2)
         });
     } catch (error) {
         console.error(error);
