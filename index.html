@@ -207,14 +207,14 @@
         <div id="note" class="text-center "></div>
         <div class="flex gap-20 flex-wrap justify-center">
             <div class="w-[800px]">
-                <canvas id="myChart" ></canvas>
+                <canvas id="myChart"></canvas>
             </div>
             <div class="w-[800px]">
                 <canvas id="myChart2"></canvas>
             </div>
             <div class="w-[800px]">
-            <canvas id="myChart3"></canvas>
-        </div>
+                <canvas id="myChart3"></canvas>
+            </div>
 
         </div>
     </div>
@@ -240,12 +240,12 @@
             aztec2_acc.innerHTML = `<p class="text-xl font-semibold" >${aztecAcc2.substring(0, 30) + "..."}</p> `
             xdc_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${account.data.balance1} FTH </h5>`
             xdc2_bal.innerHTML = `<h5 class="text-xl font-semibold" > ${account.data.balance2} FTH </h5>`
-    
+
             aztec_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${account.data.aztecAccountBalance} WFTH </h5>`
             aztec2_bal.innerHTML = ` <h5 class="text-xl font-semibold" > ${account.data.aztecAccountBalance2} WFTH </h5>`
         }
- 
-         catch (error) {
+
+        catch (error) {
             console.log(error)
             showToast("Something went wrong!", false)
         }
@@ -349,7 +349,6 @@
             size.push({ name: 'Aztec', size: tx.data.blockSize })
             showToast("Transaction Successful", true)
         } catch (error) {
-            console.log(error)
             showToast("Something went wrong !", false)
         }
         finally {
@@ -372,10 +371,9 @@
     const ctx1 = document.getElementById('myChart');
     const ctx2 = document.getElementById('myChart2');
     const ctx3 = document.getElementById('myChart3');
-
-    const dummy = [12, 16]
     function showStatistics() {
         if (time.length == 2) {
+            document.getElementById("note").innerHTML = ""
             new Chart(ctx1, {
                 type: 'bar',
                 data: {
@@ -384,7 +382,7 @@
                         label: 'Time Taken (in seconds)',
                         data: time.map(obj => obj.time),
                         backgroundColor: [
-                            "rgba(255, 99, 132, 0.2)",
+                            "rgba(255, 99, 132)",
                         ],
                         borderWidth: 1
                     }]
@@ -406,11 +404,13 @@
                         data: size.map(obj => obj.size),
                         borderWidth: 1,
                         backgroundColor: [
-                            "rgba(255, 206, 86, 0.2)",
+                            "rgba(255, 206, 86)",
                         ],
                     }]
                 },
+
                 options: {
+
                     scales: {
                         y: {
                             beginAtZero: true
@@ -427,11 +427,26 @@
                         data: fee.map(obj => obj.fee),
                         borderWidth: 1,
                         backgroundColor: [
-                            "rgba(153, 102, 255, 0.2)",
+                            "rgba(153, 102, 255)",
                         ],
                     }]
                 },
                 options: {
+                    plugins : {
+                        tooltip: {
+                        enabled: true,
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                const labels = 
+                                tooltipItem.dataset.label.toString();
+                                const values =
+                                tooltipItem.dataset.data[tooltipItem.dataIndex];
+                                  return 'Transaction Fee: ' + values.toFixed(7) +  ' $'
+                            }
+                        }
+                    },
+                    },
+                 
                     scales: {
                         y: {
                             beginAtZero: true

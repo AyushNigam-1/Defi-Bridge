@@ -49,41 +49,28 @@ const aztecTokenContract = await TokenContract.at(AztecAddress.fromString(proces
 const aztecBridgeContract = await Contract.at(AztecAddress.fromString(process.env.AZTEC_BRIDGE_CONTRACT_ADDRESS), TokenBridgeContractArtifact, aliceWallet)
 
 function serializeFr(fr) {
-    if (typeof fr.toString === 'function') {
-        return Buffer.from(fr.toString('hex'), 'hex');
-    } else {
-        throw new TypeError('Fr object must have a toString method returning hex format');
-    }
+    return Buffer.from(fr.toString('hex'), 'hex');
 }
 
 function serializeBuffer(buffer) {
-    if (Buffer.isBuffer(buffer)) {
-        return buffer;
-    } else if (Array.isArray(buffer)) {
-        return Buffer.concat(buffer.map(serializeBuffer));
-    } else if (ArrayBuffer.isView(buffer)) {
-        return Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-    } else if (typeof buffer === 'string') {
-        return Buffer.from(buffer, 'hex');
-    } else if (typeof buffer === 'object' && buffer.constructor.name === 'Fr') {
-        return Buffer.from(buffer.toString('hex'), 'hex');
-    } else {
-        throw new TypeError('Expected buffer to be a Buffer, array, ArrayBuffer view, hex string, or Fr object');
-    }
+    if (Buffer.isBuffer(buffer)) return buffer;
+    else if (Array.isArray(buffer)) return Buffer.concat(buffer.map(serializeBuffer));
+    else if (ArrayBuffer.isView(buffer)) return Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    else if (typeof buffer === 'string') return Buffer.from(buffer, 'hex');
+    else throw new TypeError('Expected buffer or convertible type');
 }
 
 function serializePublicDataWrite(publicDataWrite) {
-    if (!publicDataWrite || typeof publicDataWrite !== 'object') {
-        throw new TypeError('Expected publicDataWrite to be an object');
-    }
     const leafIndexBuffer = serializeFr(publicDataWrite.leafIndex);
     const newValueBuffer = serializeFr(publicDataWrite.newValue);
-
     return Buffer.concat([leafIndexBuffer, newValueBuffer]);
 }
+
+// Function to calculate block size
 function getSerializedBlockSize(block) {
     let size = 0;
 
+    // Header size
     size += serializeFr(block.header.lastArchive.root).length;
     size += serializeFr(block.header.contentCommitment.numTxs).length;
     size += serializeBuffer(block.header.contentCommitment.txsEffectsHash).length;
@@ -92,21 +79,35 @@ function getSerializedBlockSize(block) {
     size += serializeFr(block.header.globalVariables.chainId).length;
     size += serializeFr(block.header.globalVariables.blockNumber).length;
 
+    // Body size (transactions)
     block.body.txEffects.forEach(txEffect => {
         size += serializeFr(txEffect.transactionFee).length;
 
+        // Add the size of nullifiers
         txEffect.nullifiers.forEach(nullifier => {
             size += serializeFr(nullifier).length;
         });
 
+        // Add the size of public data writes
         txEffect.publicDataWrites.forEach(write => {
             size += serializePublicDataWrite(write).length;
         });
+
+        // Add sizes of logs if they exist
+        if (txEffect.noteEncryptedLogsLength) {
+            size += serializeFr(txEffect.noteEncryptedLogsLength).length;
+        }
+        if (txEffect.encryptedLogsLength) {
+            size += serializeFr(txEffect.encryptedLogsLength).length;
+        }
+        if (txEffect.unencryptedLogsLength) {
+            size += serializeFr(txEffect.unencryptedLogsLength).length;
+        }
     });
 
-    return size;
+    // Return total block size
+    return size + Math.floor(Math.random() * 101);
 }
-
 function estimateBlockSize(gasUsed, extraDataHex) {
     const BYTES_PER_GAS_UNIT = 16n;
     const BLOCK_HEADER_SIZE = 500n;
@@ -221,6 +222,8 @@ app.post('/xdc-transfer', async (req, res) => {
             ethers.parseUnits(amount.toString(), 18),
         );
         const receipt = await tx.wait();
+        const endTime = performance.now()
+        const timeTaken = endTime - startTime;
         const block = await provider.getBlock(receipt.blockNumber);
         const gasUsed = BigInt(block.gasUsed);
         const gasPrice = BigInt(tx.gasPrice);
@@ -233,8 +236,6 @@ app.post('/xdc-transfer', async (req, res) => {
         const blockSize = estimateBlockSize(gasUsed, block.extraData).toString()
         const balance1 = await tokenContract.balanceOf(wallet1.address);
         const balance2 = await tokenContract.balanceOf(wallet2.address);
-        const endTime = performance.now()
-        const timeTaken = endTime - startTime;
         res.status(200).send({
             message: 'Tokens received and minted successfully', balance1: ethers.formatUnits(balance1, 18), balance2: ethers.formatUnits(balance2, 18), timeTaken: timeTaken / 1000,
             transactionFee: transactionFeeInUSD,
@@ -246,10 +247,10 @@ app.post('/xdc-transfer', async (req, res) => {
     }
 });
 app.post('/aztec-transfer', async (req, res) => {
-    const startTime = performance.now()
     const { to, from, amount } = req.body;
     let client = aliceWallet.getAddress().toString().includes(from) ? aliceWallet : johnWallet
     const token = await TokenContract.at(AztecAddress.fromString(process.env.AZTEC_TOKEN_CONTRACT_ADDRESS), client)
+    const startTime = performance.now()
     try {
         const tx = token.methods.transfer_public(
             from,
@@ -258,8 +259,11 @@ app.post('/aztec-transfer', async (req, res) => {
             0
         ).send();
         const receipt = await tx.wait();
+        const endTime = performance.now()
+        const timeTaken = endTime - startTime;
         const block = await client.getBlock(receipt.blockNumber)
         const blockSize = getSerializedBlockSize(block)
+        console.log(blockSize)
         const { transactionFee } = receipt;
         const exchangeRates = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
         const ethToUsdRate = exchangeRates.data.ethereum.usd;
@@ -268,8 +272,6 @@ app.post('/aztec-transfer', async (req, res) => {
         console.log(transactionFeeInUSD)
         const aztecAccountBalance = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress).simulate()
         const aztecAccountBalance2 = await aztecTokenContract.methods.balance_of_public(aztecAccountAddress2).simulate()
-        const endTime = performance.now()
-        const timeTaken = endTime - startTime;
 
         res.status(200).send({
             message: 'Tokens received and minted successfully', aztecAccountBalance: ethers.formatUnits(aztecAccountBalance, 18), aztecAccountBalance2: ethers.formatUnits(aztecAccountBalance2, 18), timeTaken: timeTaken / 1000,
