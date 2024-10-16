@@ -1,8 +1,17 @@
-const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+const { run } = require("hardhat");
 
-module.exports = buildModule("DeploymentModule", (m) => {
-  const token = m.contract("Token");
-  const bridge = m.contract("Bridge", [token]);
+async function main() {
+    const { token, bridge } = await run("deploy:your_module_name"); // Replace with your actual module name
 
-  return { token, bridge };
-});
+    console.log(`Token deployed at: ${token.address}`);
+    console.log(`Bridge deployed at: ${bridge.address}`);
+
+    // Code to update .env...
+}
+
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

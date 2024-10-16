@@ -16,6 +16,7 @@
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "hardhat-deploy": "^0.13.0",
     "typescript": "^5.5.4",
     "viem": "^2.19.3"
   },

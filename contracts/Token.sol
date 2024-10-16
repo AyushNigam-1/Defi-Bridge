@@ -4,17 +4,17 @@ pragma solidity 0.8.14;
 import "./extension/Admin.sol";
 
 contract Token is Admin {
-
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint)) _allowed;
-    constructor()  {
+
+    constructor() {
         _name = "FATHOM";
         _symbol = "FTH";
         _decimals = 18;
         _owner = msg.sender;
         admin[msg.sender] = true;
-       _mint(msg.sender, 1000 * (10 ** uint(_decimals)));
-       _maxSupply = 1000 * (10 ** uint(_decimals));
+        _mint(msg.sender, 1000 * (10 ** uint(_decimals)));
+        _maxSupply = 1000 * (10 ** uint(_decimals));
     }
 
     uint _totalSupply;
@@ -25,7 +25,10 @@ contract Token is Admin {
 
     event Transfer(address indexed from, address indexed to, uint value);
     event Approval(address indexed owner, address indexed spender, uint value);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
     event Burn(address indexed from, uint256 value);
 
     function name() public view returns (string memory) {
@@ -57,7 +60,9 @@ contract Token is Admin {
         return true;
     }
 
-    function transferOwnership(address _address) external onlyOwner returns (bool) {
+    function transferOwnership(
+        address _address
+    ) external onlyOwner returns (bool) {
         emit OwnershipTransferred(_owner, _address);
         _owner = _address;
         return true;
@@ -74,16 +79,23 @@ contract Token is Admin {
         return true;
     }
 
-    function ownerBurn(address from, uint amount) external  returns (bool) {
+    function ownerBurn(address from, uint amount) external returns (bool) {
         _burn(from, amount);
         return true;
     }
 
-    function allowance(address owner, address spender) public view returns (uint) {
+    function allowance(
+        address owner,
+        address spender
+    ) public view returns (uint) {
         return _allowed[owner][spender];
     }
 
-    function transfer(address from , address to, uint value) public returns (bool) {
+    function transfer(
+        address from,
+        address to,
+        uint value
+    ) public returns (bool) {
         require(value <= balanceOf[from], "Insufficient balance");
         require(to != address(0), "Invalid address");
 
@@ -98,21 +110,31 @@ contract Token is Admin {
         return true;
     }
 
-    function transferFrom(address from, address to, uint value) public returns (bool) {
+    function transferFrom(
+        address from,
+        address to,
+        uint value
+    ) public returns (bool) {
         require(value <= balanceOf[from], "Insufficient balance");
         require(to != address(0), "Invalid address");
-        require(_transfer(from, to, value) , "Transfer failed");
+        require(_transfer(from, to, value), "Transfer failed");
         return true;
     }
 
-    function increaseAllowance(address spender, uint addedValue) public returns (bool) {
+    function increaseAllowance(
+        address spender,
+        uint addedValue
+    ) public returns (bool) {
         require(spender != address(0), "Invalid address");
         _allowed[msg.sender][spender] += addedValue;
         emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
         return true;
     }
 
-    function decreaseAllowance(address spender, uint subtractedValue) public returns (bool) {
+    function decreaseAllowance(
+        address spender,
+        uint subtractedValue
+    ) public returns (bool) {
         require(spender != address(0), "Invalid address");
         _allowed[msg.sender][spender] -= subtractedValue;
         emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
@@ -135,7 +157,11 @@ contract Token is Admin {
         emit Transfer(account, address(0), amount);
     }
 
-    function _transfer(address from, address to, uint value) internal returns (bool) {
+    function _transfer(
+        address from,
+        address to,
+        uint value
+    ) internal returns (bool) {
         balanceOf[from] -= value;
         balanceOf[to] += value;
         return true;

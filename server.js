@@ -183,9 +183,13 @@ app.post('/bridge-send', async (req, res) => {
                 reciever,
                 ethers.parseUnits(amount.toString(), 18)
             );
+            console.log("token burning started")
             await burnToken.wait();
+            console.log("token burning completed")
+
         } catch (error) {
             console.error(error);
+            console.log(error)
             res.status(500).send({ error: error.message });
         }
         try {
@@ -194,8 +198,9 @@ app.post('/bridge-send', async (req, res) => {
                 ethers.parseUnits(amount.toString(), 18),
                 0
             ).send({ from: aliceWallet });
+            console.log("claiming token started")
             await aztecMint.wait();
-
+            console.log("claiming token completed")
         } catch (error) {
             console.error(error);
             res.status(500).send({ error: error.message });
@@ -221,6 +226,7 @@ app.post('/xdc-transfer', async (req, res) => {
             to,
             ethers.parseUnits(amount.toString(), 18),
         );
+        console.log(tx.hash)
         const receipt = await tx.wait();
         const endTime = performance.now()
         const timeTaken = endTime - startTime;
@@ -228,7 +234,7 @@ app.post('/xdc-transfer', async (req, res) => {
         const gasUsed = BigInt(block.gasUsed);
         const gasPrice = BigInt(tx.gasPrice);
         const transactionFee = gasUsed * gasPrice;
-        const exchangeRates =await axios("https://api.coingecko.com/api/v3/simple/price?ids=xdce-crowd-sale&vs_currencies=usd")
+        const exchangeRates = await axios("https://api.coingecko.com/api/v3/simple/price?ids=xdce-crowd-sale&vs_currencies=usd")
         const xdcToUsdRate = exchangeRates.data['xdce-crowd-sale'].usd
         const transactionFeeInXDCNumber = Number(transactionFee);
         const transactionFeeInUSD = (transactionFeeInXDCNumber / 1e18) * xdcToUsdRate;
@@ -259,6 +265,7 @@ app.post('/aztec-transfer', async (req, res) => {
             0
         ).send();
         const receipt = await tx.wait();
+        console.log(receipt);
         const endTime = performance.now()
         const timeTaken = endTime - startTime;
         const block = await client.getBlock(receipt.blockNumber)
