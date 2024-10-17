@@ -1,0 +1,44 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/Bridge.sol": {
+      "content": "// SPDX-License-Identifier: unlicensed\npragma solidity 0.8.14;\n\nimport \"./extension/Admin.sol\";\nimport \"./interface/IToken.sol\";\n\ncontract Bridge is Admin {\n    bool bridgeOn = true;\n    IToken token;\n    mapping(address => bool) public bridgeable;\n    mapping(address => bool) public admins;\n    event onBurn(address from, string to, uint amount, uint date);\n    event onMint(address from, address to, uint amount, uint date);\n\n    constructor(address _token) {\n        _owner = msg.sender;\n        token = IToken(_token);\n        admin[msg.sender] = true;\n    }\n\n    function burn(string calldata to, uint amount) external {\n        token.ownerBurn(msg.sender, amount);\n        emit onBurn(msg.sender, to, amount, block.timestamp);\n    }\n\n    function mint(address to, uint amount) external {\n        token.ownerMint(to, amount);\n        emit onMint(msg.sender, to, amount, block.timestamp);\n    }\n\n    function balance(address account) external view returns (uint256) {\n        return token.balanceOf(account);\n    }\n}\n"
+    },
+    "contracts/extension/Admin.sol": {
+      "content": "//SPDX-License-Identifier: unlicensed\npragma solidity 0.8.14;\n\ncontract Admin {\n    address _owner;\n\n    mapping(address => bool) admin;\n\n    event AdminSet(address);\n    event AdminRemoved(address);\n\n    modifier onlyOwner() {\n        require(\n            msg.sender == _owner,\n            \"Only owner is able to access this function\"\n        );\n        _;\n    }\n\n    modifier onlyAdmin() {\n        require(\n            msg.sender == _owner || admin[msg.sender] == true,\n            \"You don't have permission to access this function\"\n        );\n        _;\n    }\n\n    /**\n     * @dev set an address as admin\n     * @param _address address that you wanna turn admin\n     */\n\n    function setAdmin(address _address) external onlyOwner returns (bool) {\n        admin[_address] = true;\n        emit AdminSet(_address);\n        return true;\n    }\n\n    function removeAdmin(address _address) external onlyOwner returns (bool) {\n        admin[_address] = false;\n        emit AdminRemoved(_address);\n        return true;\n    }\n\n}\n"
+    },
+    "contracts/interface/IToken.sol": {
+      "content": "//SPDX-License-Identifier: unlicensed\npragma solidity 0.8.14;\n\ninterface IToken {\n    function ownerMint(address to, uint amount) external returns(bool);\n    function ownerBurn(address from, uint amount) external returns(bool);\n    function balanceOf(address account) external view returns (uint256);\n}"
+    },
+    "contracts/Token.sol": {
+      "content": "// SPDX-License-Identifier: unlicensed\npragma solidity 0.8.14;\n\nimport \"./extension/Admin.sol\";\n\ncontract Token is Admin {\n    mapping(address => uint256) public balanceOf;\n    mapping(address => mapping(address => uint)) _allowed;\n\n    constructor() {\n        _name = \"FATHOM\";\n        _symbol = \"FTH\";\n        _decimals = 18;\n        _owner = msg.sender;\n        admin[msg.sender] = true;\n        _mint(msg.sender, 1000 * (10 ** uint(_decimals)));\n        _maxSupply = 1000 * (10 ** uint(_decimals));\n    }\n\n    uint _totalSupply;\n    string _name;\n    string _symbol;\n    uint8 _decimals;\n    uint _maxSupply;\n\n    event Transfer(address indexed from, address indexed to, uint value);\n    event Approval(address indexed owner, address indexed spender, uint value);\n    event OwnershipTransferred(\n        address indexed previousOwner,\n        address indexed newOwner\n    );\n    event Burn(address indexed from, uint256 value);\n\n    function name() public view returns (string memory) {\n        return _name;\n    }\n\n    function symbol() public view returns (string memory) {\n        return _symbol;\n    }\n\n    function decimals() public view returns (uint8) {\n        return _decimals;\n    }\n\n    function totalSupply() public view returns (uint) {\n        return _totalSupply;\n    }\n\n    function getOwner() external view returns (address) {\n        return _owner;\n    }\n\n    function remainingTokens() external view returns (uint) {\n        return _maxSupply - _totalSupply;\n    }\n\n    function setMaxSupply(uint amount) external onlyOwner returns (bool) {\n        _maxSupply = amount;\n        return true;\n    }\n\n    function transferOwnership(\n        address _address\n    ) external onlyOwner returns (bool) {\n        emit OwnershipTransferred(_owner, _address);\n        _owner = _address;\n        return true;\n    }\n\n    function setTotalSupply(uint amount) external onlyOwner returns (bool) {\n        _totalSupply = amount;\n        return true;\n    }\n\n    function ownerMint(address to, uint amount) external returns (bool) {\n        require(_totalSupply + amount <= _maxSupply, \"Max supply exceeded\");\n        _mint(to, amount);\n        return true;\n    }\n\n    function ownerBurn(address from, uint amount) external returns (bool) {\n        _burn(from, amount);\n        return true;\n    }\n\n    function allowance(\n        address owner,\n        address spender\n    ) public view returns (uint) {\n        return _allowed[owner][spender];\n    }\n\n    function transfer(\n        address from,\n        address to,\n        uint value\n    ) public returns (bool) {\n        require(value <= balanceOf[from], \"Insufficient balance\");\n        require(to != address(0), \"Invalid address\");\n\n        _transfer(from, to, value);\n        return true;\n    }\n\n    function approve(address spender, uint value) public returns (bool) {\n        require(spender != address(0), \"Invalid address\");\n        _allowed[msg.sender][spender] = value;\n        emit Approval(msg.sender, spender, value);\n        return true;\n    }\n\n    function transferFrom(\n        address from,\n        address to,\n        uint value\n    ) public returns (bool) {\n        require(value <= balanceOf[from], \"Insufficient balance\");\n        require(to != address(0), \"Invalid address\");\n        require(_transfer(from, to, value), \"Transfer failed\");\n        return true;\n    }\n\n    function increaseAllowance(\n        address spender,\n        uint addedValue\n    ) public returns (bool) {\n        require(spender != address(0), \"Invalid address\");\n        _allowed[msg.sender][spender] += addedValue;\n        emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);\n        return true;\n    }\n\n    function decreaseAllowance(\n        address spender,\n        uint subtractedValue\n    ) public returns (bool) {\n        require(spender != address(0), \"Invalid address\");\n        _allowed[msg.sender][spender] -= subtractedValue;\n        emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);\n        return true;\n    }\n\n    function _mint(address account, uint amount) internal {\n        require(account != address(0), \"Invalid address\");\n        _totalSupply += amount;\n        balanceOf[account] += amount;\n        emit Transfer(address(0), account, amount);\n    }\n\n    function _burn(address account, uint amount) internal {\n        require(account != address(0), \"Invalid address\");\n        require(amount <= balanceOf[account], \"Insufficient balance\");\n\n        _totalSupply -= amount;\n        balanceOf[account] -= amount;\n        emit Transfer(account, address(0), amount);\n    }\n\n    function _transfer(\n        address from,\n        address to,\n        uint value\n    ) internal returns (bool) {\n        balanceOf[from] -= value;\n        balanceOf[to] += value;\n        return true;\n    }\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
